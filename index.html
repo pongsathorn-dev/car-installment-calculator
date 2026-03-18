@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คำนวณค่างวดรถยนต์</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="card hero">
+      <div>
+        <p class="eyebrow">เครื่องมือสำหรับนำเสนอลูกค้า</p>
+        <h1>คำนวณค่างวดรถยนต์</h1>
+        <p class="intro">
+          ช่วยคำนวณค่างวดรายเดือนอย่างรวดเร็วและชัดเจน เพื่อใช้ประกอบการนำเสนอทางเลือกด้านไฟแนนซ์ให้ลูกค้า
+        </p>
+      </div>
+    </section>
+
+    <section class="card calculator">
+      <form id="loan-form" class="form-grid">
+        <label>
+          <span>ราคารถ</span>
+          <input id="car-price" name="car-price" type="text" inputmode="decimal" value="850,000" required>
+        </label>
+
+        <label>
+          <span>เงินดาวน์</span>
+          <input id="down-payment" name="down-payment" type="text" inputmode="decimal" value="150,000" required>
+        </label>
+
+        <label>
+          <span>อัตราดอกเบี้ยต่อปี (%)</span>
+          <input id="interest-rate" name="interest-rate" type="text" inputmode="decimal" value="3.5" required>
+        </label>
+
+        <label>
+          <span>ระยะเวลาผ่อน (เดือน)</span>
+          <input id="loan-term" name="loan-term" type="text" inputmode="numeric" value="60" required>
+        </label>
+
+        <button type="submit">คำนวณค่างวด</button>
+      </form>
+
+      <div class="results" aria-live="polite">
+        <div class="result-item">
+          <span>ยอดจัดไฟแนนซ์</span>
+          <strong id="loan-amount-display">฿0.00</strong>
+        </div>
+        <div class="result-item highlight">
+          <span>ค่างวดต่อเดือน</span>
+          <strong id="monthly-payment-display">฿0.00</strong>
+        </div>
+        <div class="result-item">
+          <span>ดอกเบี้ยรวม</span>
+          <strong id="total-interest-display">฿0.00</strong>
+        </div>
+        <div class="result-item">
+          <span>ยอดชำระทั้งหมด</span>
+          <strong id="total-payment-display">฿0.00</strong>
+        </div>
+      </div>
+
+      <p id="message" class="message" role="status"></p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
