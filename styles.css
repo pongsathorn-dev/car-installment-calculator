@@ -87,7 +87,8 @@ label span {
   font-size: 0.95rem;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid rgba(31, 42, 48, 0.12);
@@ -97,9 +98,14 @@ input {
   font: inherit;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: 3px solid rgba(15, 118, 110, 0.15);
   border-color: var(--accent);
+}
+
+.is-hidden {
+  display: none;
 }
 
 button {

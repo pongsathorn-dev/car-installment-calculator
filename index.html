@@ -21,6 +21,14 @@
     <section class="card calculator">
       <form id="loan-form" class="form-grid">
         <label>
+          <span>วิธีคำนวณ</span>
+          <select id="calculation-type" name="calculation-type">
+            <option value="standard">แบบปกติ</option>
+            <option value="balloon">แคมเปญบอลลูน</option>
+          </select>
+        </label>
+
+        <label>
           <span>ราคารถ</span>
           <input id="car-price" name="car-price" type="text" inputmode="decimal" value="850,000" required>
         </label>
@@ -40,6 +48,11 @@
           <input id="loan-term" name="loan-term" type="text" inputmode="numeric" value="60" required>
         </label>
 
+        <label id="balloon-payment-field" class="is-hidden">
+          <span>ยอดบอลลูนงวดสุดท้าย (บาท)</span>
+          <input id="balloon-payment" name="balloon-payment" type="text" inputmode="decimal" value="250,000">
+        </label>
+
         <button type="submit">คำนวณค่างวด</button>
       </form>
 
@@ -49,12 +62,16 @@
           <strong id="loan-amount-display">0.00</strong>
         </div>
         <div class="result-item highlight">
-          <span>ค่างวดต่อเดือน (บาท)</span>
+          <span id="monthly-payment-label">ค่างวดต่อเดือน (บาท)</span>
           <strong id="monthly-payment-display">0.00</strong>
         </div>
         <div class="result-item">
           <span>ดอกเบี้ยรวม (บาท)</span>
           <strong id="total-interest-display">0.00</strong>
+        </div>
+        <div id="balloon-payment-result" class="result-item is-hidden">
+          <span>ยอดบอลลูนงวดสุดท้าย (บาท)</span>
+          <strong id="balloon-payment-display">0.00</strong>
         </div>
         <div class="result-item">
           <span>ยอดชำระทั้งหมด (บาท)</span>
