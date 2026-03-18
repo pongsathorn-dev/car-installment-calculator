@@ -11,8 +11,6 @@ const totalPaymentDisplay = document.getElementById("total-payment-display");
 const message = document.getElementById("message");
 
 const currencyFormatter = new Intl.NumberFormat("th-TH", {
-  style: "currency",
-  currency: "THB",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 });
