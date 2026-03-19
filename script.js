@@ -1,596 +1,518 @@
 const TOYOTA_MODEL_DATA = {
-  "Alphard & Vellfire": [
-    "Alphard 2.5 HEV Luxury",
-    "Vellfire 2.5 HEV Premium"
-  ],
-  "bZ4X": [
-    "FWD",
-    "AWD"
-  ],
-  CAMRY: [
-    "HEV Premium Luxury",
-    "HEV Premium",
-    "HEV Smart"
-  ],
-  "Corolla Altis": [
-    "HEV GR Sport",
-    "HEV Premium",
-    "1.8 Sport",
-    "1.6 G"
-  ],
-  "Corolla Cross": [
-    "HEV Premium Luxury",
-    "HEV Premium",
-    "HEV Smart"
-  ],
-  Fortuner: [
-    "Leader S",
-    "Leader G",
-    "Leader V",
-    "Legender",
-    "GR Sport"
-  ],
-  "Hiace & Commuter": [
-    "Hiace GL AT",
-    "Hiace GL MT",
-    "Hiace Eco MT",
-    "Commuter MT"
-  ],
-  "Hilux Champ": [
-    "2.0 Gasoline MT SWB",
-    "2.0 Gasoline C&C MT LWB",
-    "2.4 Diesel MT SWB",
-    "2.4 Diesel C&C MT LWB",
-    "2.4 Diesel AT C&C LWB"
-  ],
-  "Hilux Revo Standard Cab": [
-    "2.4 Entry MT",
-    "2.4 Entry AT",
-    "2.8 Rocco AT"
-  ],
-  "Hilux Revo Z Edition": [
-    "Smart Cab 2.4 Entry",
-    "Smart Cab 2.4 Mid",
-    "Double Cab 2.4 Mid",
-    "Double Cab 2.4 High"
-  ],
-  "Hilux Travo Standard Cab 4TREX": [
-    "Single Cab 2.4 Entry MT",
-    "Single Cab 2.8 Entry MT"
-  ],
-  "Hilux Travo Prerunner & 4TREX": [
-    "Double Cab 4x4 2.8 High AT",
-    "Double Cab 4x4 2.8 High MT",
-    "Double Cab 4x4 2.4 Mid",
-    "Double Cab Prerunner 2x4 2.4 High AT",
-    "Double Cab Prerunner 2x4 2.4 High"
-  ],
-  "Hilux Travo Overland": [
-    "Double Cab 2.8 Overland AT"
-  ],
-  "Hilux Travo-e": [
-    "BEV Smart Cab",
-    "BEV Double Cab"
-  ],
-  "Innova Zenix": [
-    "2.0 HEV Premium Luxury",
-    "2.0 HEV Premium",
-    "2.0 HEV Smart"
-  ],
-  Majesty: [
-    "Premium",
-    "Grande"
-  ],
-  Veloz: [
-    "Premium",
-    "Smart"
-  ],
-  Yaris: [
-    "Sport",
-    "Smart",
-    "Premium"
+  "Yaris": [
+    { name: "Sport", price: 584000 },
+    { name: "Smart", price: 644000 },
+    { name: "Premium", price: 689000 }
   ],
   "Yaris ATIV": [
-    "Sport",
-    "Smart",
-    "Premium",
-    "Premium Luxury",
-    "Nightshade",
-    "HEV Premium",
-    "HEV Premium Luxury"
+    { name: "Sport", price: 569000 },
+    { name: "Smart", price: 599000 },
+    { name: "Premium", price: 679000 },
+    { name: "Premium Luxury", price: 709000 },
+    { name: "NIGHTSHADE", price: 709000 },
+    { name: "HEV Premium", price: 729000 }
+  ],
+  "Yaris ATIV GR Sport": [
+    { name: "HEV GR Sport", price: 779000 }
   ],
   "Yaris Cross": [
-    "HEV Smart",
-    "HEV Premium",
-    "HEV Premium Luxury"
+    { name: "HEV Smart", price: 809000 },
+    { name: "HEV Premium", price: 859000 },
+    { name: "HEV Premium Luxury", price: 909000 },
+    { name: "NIGHTSHADE", price: 929000 }
+  ],
+  "Corolla Cross": [
+    { name: "HEV Smart", price: 989000 },
+    { name: "HEV Premium", price: 1094000 },
+    { name: "HEV Premium Luxury", price: 1204000 }
+  ],
+  "Corolla Altis": [
+    { name: "1.6G", price: 894000 },
+    { name: "1.8 Sport", price: 979000 },
+    { name: "HEV Premium", price: 1009000 }
+  ],
+  "Corolla Altis GR Sport": [
+    { name: "HEV GR Sport", price: 1129000 }
+  ],
+  "CAMRY": [
+    { name: "HEV Smart", price: 1475000 },
+    { name: "HEV Premium", price: 1659000 },
+    { name: "HEV Premium Luxury", price: 1809000 }
+  ],
+  "Veloz": [
+    { name: "Smart", price: 795000 },
+    { name: "Premium", price: 875000 }
+  ],
+  "Innova Zenix": [
+    { name: "HEV Smart", price: 1379000 },
+    { name: "HEV Premium", price: 1489000 }
+  ],
+  "Fortuner Leader": [
+    { name: "2.4 Leader S", price: 1239000 },
+    { name: "2.4 Leader G", price: 1400000 },
+    { name: "2.4 Leader G+", price: 1439000 },
+    { name: "2.4 Leader V", price: 1530000 },
+    { name: "2.4 Leader V 4WD", price: 1600000 }
+  ],
+  "Fortuner Legender": [
+    { name: "2.4 Legender", price: 1643000 },
+    { name: "2.4 Legender 4WD", price: 1713000 },
+    { name: "2.8 Legender", price: 1835000 },
+    { name: "2.8 Legender 4WD", price: 1904000 }
+  ],
+  "Fortuner GR Sport": [
+    { name: "2.8 GR Sport 4WD", price: 1969000 }
+  ],
+  "Alphard": [
+    { name: "Alphard 2.5 HEV", price: 4269000 },
+    { name: "Alphard 2.5 HEV Luxury", price: 4639000 },
+    { name: "Vellfire 2.5 HEV", price: 4419000 }
+  ],
+  "bZ4X": [
+    { name: "FWD", price: 1529000 },
+    { name: "AWD", price: 1649000 }
+  ],
+  "Hiace": [
+    { name: "Hiace Eco MT", price: 1069000 },
+    { name: "Hiace GL MT", price: 1149000 },
+    { name: "Hiace GL AT", price: 1204000 }
+  ],
+  "Commuter": [
+    { name: "Diesel 2.8 MT", price: 1339000 },
+    { name: "Diesel 2.8 AT", price: 1369000 }
+  ],
+  "Majesty": [
+    { name: "Premium", price: 1994000 },
+    { name: "Grande", price: 2339000 }
+  ],
+  "Hilux Champ": [
+    { name: "2.4 MT C&C LWB", price: 519000 },
+    { name: "2.4 MT LWB", price: 547000 },
+    { name: "2.4 AT C&C SWB", price: 557000 },
+    { name: "2.4 AT LWB", price: 582000 },
+    { name: "2.4 AT SWB Attractive Package", price: 602000 },
+    { name: "2.4 AT Super SWB Attractive Package", price: 615000 }
+  ],
+  "Hilux Revo Standard Cab": [
+    { name: "2.4 Entry (ไม่มีกระบะ)", price: 584000 },
+    { name: "2.4 Entry ช่วงล้อสั้น", price: 624000 },
+    { name: "2.4 Entry", price: 624000 },
+    { name: "2.4 Entry AT (ไม่มีกระบะ)", price: 634000 },
+    { name: "2.8 Entry", price: 639000 },
+    { name: "2.4 Entry AT", price: 674000 }
+  ],
+  "Hilux Revo Z Edition": [
+    { name: "Smart Cab Z Edition 4x2 2.4 Entry", price: 669000 },
+    { name: "Smart Cab Z Edition 4x2 2.4 Entry AT", price: 719000 },
+    { name: "Smart Cab Z Edition 4x2 2.4 Mid", price: 740000 },
+    { name: "Double Cab Z Edition 4x2 2.4 Entry", price: 744000 },
+    { name: "Smart Cab Z Edition 4x2 2.4 Mid AT", price: 790000 },
+    { name: "Double Cab Z Edition 4x2 2.4 Entry AT", price: 784000 },
+    { name: "Double Cab Z Edition 4x2 2.4 Mid", price: 822000 },
+    { name: "Double Cab Z Edition 4x2 2.4 Mid AT", price: 862000 },
+    { name: "Double Cab 4x2 2.8 GR Sport AT", price: 934000 }
+  ],
+  "Hilux Travo Standard Cab 4TREX": [
+    { name: "Hilux Travo Standard Cab 4TREX 2.8 MT", price: 767000 },
+    { name: "Hilux Travo Standard Cab 4TREX 2.8 AT", price: 819000 }
+  ],
+  "Hilux Travo Prerunner & 4TREX": [
+    { name: "Hilux Travo Smart Cab Prerunner 2.8 Smart MT", price: 789000 },
+    { name: "Hilux Travo Smart Cab Prerunner 2.8 Smart AT", price: 839000 },
+    { name: "Hilux Travo Smart Cab Prerunner 2.8 Premium MT", price: 859000 },
+    { name: "Hilux Travo Smart Cab Prerunner 2.8 Premium AT", price: 909000 },
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Smart MT", price: 895000 },
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Smart AT", price: 945000 },
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Premium MT", price: 949000 },
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Premium AT", price: 999000 },
+    { name: "Hilux Travo Smart Cab 4TREX 2.8 Premium MT", price: 984000 },
+    { name: "Hilux Travo Smart Cab 4TREX 2.8 Premium AT", price: 1029000 },
+    { name: "Hilux Travo Double Cab 4TREX 2.8 Premium MT", price: 1090000 }
+  ],
+  "Hilux Travo Overland": [
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Overland AT", price: 1102000 },
+    { name: "Hilux Travo Double Cab Prerunner 2.8 Overland Plus AT", price: 1176000 },
+    { name: "Hilux Travo Double Cab 4TREX 2.8 Overland AT", price: 1292000 },
+    { name: "Hilux Travo Double Cab 4TREX 2.8 Overland Plus AT", price: 1366000 }
+  ],
+  "Hilux Travo-e": [
+    { name: "Hilux Travo-e Double Cab 4TREX", price: 1491000 }
+  ],
+  "GR 86": [
+    { name: "GR86", price: 2999000 }
+  ],
+  "GR Corolla": [
+    { name: "GR Corolla", price: 4199000 }
+  ],
+  "GR Yaris": [
+    { name: "GR Yaris", price: 3499000 }
   ]
 };
 
 const form = document.getElementById("loan-form");
-const calculationTypeInput = document.getElementById("calculation-type");
+const calculationTypeSelect = document.getElementById("calculation-type");
 const carModelInput = document.getElementById("car-model");
-const carSubmodelInput = document.getElementById("car-submodel");
 const carModelOptions = document.getElementById("car-model-options");
+const carSubmodelInput = document.getElementById("car-submodel");
 const carSubmodelOptions = document.getElementById("car-submodel-options");
 const carPriceInput = document.getElementById("car-price");
 const specialColorInput = document.getElementById("special-color");
 const supportDownPaymentInput = document.getElementById("support-down-payment");
-const downPaymentPercentInput = document.getElementById("down-payment-percent");
+const downPaymentPercentSelect = document.getElementById("down-payment-percent");
 const downPaymentInput = document.getElementById("down-payment");
 const downPaymentPercentHint = document.getElementById("down-payment-percent-hint");
-const resetFormButton = document.getElementById("reset-form");
 const supportDiscountInput = document.getElementById("support-discount");
 const interestRateInput = document.getElementById("interest-rate");
-const loanTermInput = document.getElementById("loan-term");
+const loanTermSelect = document.getElementById("loan-term");
 const rvField = document.getElementById("rv-field");
 const rvPercentageInput = document.getElementById("rv-percentage");
+const resetButton = document.getElementById("reset-form");
+const message = document.getElementById("message");
 
-const registrationFeeInput = document.getElementById("registration-fee-input");
-const redPlateDepositInput = document.getElementById("red-plate-deposit-input");
-const financeFeeInput = document.getElementById("finance-fee-input");
-const bookingDepositInput = document.getElementById("booking-deposit-input");
-const extraTransferInput = document.getElementById("extra-transfer-input");
-
-const adjustedPriceDisplay = document.getElementById("adjusted-price-display");
-const loanAmountDisplay = document.getElementById("loan-amount-display");
 const monthlyPaymentLabel = document.getElementById("monthly-payment-label");
 const monthlyPaymentDisplay = document.getElementById("monthly-payment-display");
-const totalInterestDisplay = document.getElementById("total-interest-display");
-const totalPaymentDisplay = document.getElementById("total-payment-display");
 const balloonPaymentResult = document.getElementById("balloon-payment-result");
 const balloonPaymentDisplay = document.getElementById("balloon-payment-display");
-const message = document.getElementById("message");
+const loanAmountDisplay = document.getElementById("loan-amount-display");
+const adjustedPriceDisplay = document.getElementById("adjusted-price-display");
+const totalInterestDisplay = document.getElementById("total-interest-display");
+const totalPaymentDisplay = document.getElementById("total-payment-display");
 
 const dayDownPaymentDisplay = document.getElementById("day-down-payment-display");
 const daySupportDisplay = document.getElementById("day-support-display");
 const daySupportDiscountDisplay = document.getElementById("day-support-discount-display");
+const registrationFeeInput = document.getElementById("registration-fee-input");
+const redPlateDepositInput = document.getElementById("red-plate-deposit-input");
+const financeFeeInput = document.getElementById("finance-fee-input");
 const vatDisplay = document.getElementById("vat-display");
+const bookingDepositInput = document.getElementById("booking-deposit-input");
+const extraTransferInput = document.getElementById("extra-transfer-input");
 const driveAwayTotalDisplay = document.getElementById("drive-away-total-display");
 const remainingBalanceDisplay = document.getElementById("remaining-balance-display");
 
-const currencyFormatter = new Intl.NumberFormat("th-TH", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-});
+const autoPriceNote = "อัปเดตราคารถจาก Toyota Thailand ตามรุ่นและรุ่นย่อยที่เลือก";
 
-const numberFormatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2
-});
+function parseNumber(value) {
+  const normalized = String(value ?? "").replace(/,/g, "").trim();
+  if (!normalized) {
+    return 0;
+  }
 
-const EDITABLE_FEE_DEFAULTS = {
-  registrationFee: 2300,
-  redPlateDeposit: 3500,
-  financeFee: 800,
-  bookingDeposit: 5000,
-  extraTransfer: 2000
-};
-
-const CUSTOM_DOWN_PAYMENT_VALUE = "custom";
-
-const FORM_DEFAULTS = {
-  calculationType: "balloon",
-  carModel: "",
-  carSubmodel: "",
-  carPrice: "644,000",
-  specialColor: "7,000",
-  supportDownPayment: "50,000",
-  downPaymentPercent: "15",
-  downPayment: "105,150",
-  supportDiscount: "25,000",
-  interestRate: "3.55",
-  loanTerm: "84",
-  rvPercentage: "20"
-};
-
-function formatCurrency(value) {
-  return currencyFormatter.format(Number.isFinite(value) ? value : 0);
-}
-
-function parseNumericInput(value) {
-  return Number(String(value).replace(/,/g, "").trim());
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function formatNumber(value) {
-  return numberFormatter.format(Number.isFinite(value) ? value : 0);
+  return new Intl.NumberFormat("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number.isFinite(value) ? value : 0);
 }
 
-function formatInputValue(input) {
-  const numericValue = parseNumericInput(input.value);
-
-  if (input.value.trim() === "" || !Number.isFinite(numericValue)) {
-    return;
-  }
-
-  input.value = formatNumber(numericValue);
+function formatInputValue(input, value) {
+  input.value = value === "" ? "" : new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 2
+  }).format(value);
 }
 
-function sanitizeNumericValue(value, allowDecimal = true) {
-  const sanitizedValue = String(value).replace(/[^0-9.]/g, "");
-
-  if (!allowDecimal) {
-    return sanitizedValue.replace(/\./g, "");
-  }
-
-  const parts = sanitizedValue.split(".");
-
-  if (parts.length === 1) {
-    return sanitizedValue;
-  }
-
-  return `${parts[0]}.${parts.slice(1).join("")}`;
+function setMessage(text = "") {
+  message.textContent = text;
 }
 
-function attachNumericInputBehavior(input, allowDecimal = true) {
-  input.addEventListener("input", () => {
-    const sanitizedValue = sanitizeNumericValue(input.value, allowDecimal);
-
-    if (input.value !== sanitizedValue) {
-      input.value = sanitizedValue;
-    }
-  });
-
-  input.addEventListener("keypress", (event) => {
-    const isDigit = /[0-9]/.test(event.key);
-    const isDecimalPoint = allowDecimal && event.key === "." && !input.value.includes(".");
-
-    if (!isDigit && !isDecimalPoint) {
-      event.preventDefault();
-    }
-  });
-
-  input.addEventListener("paste", (event) => {
-    event.preventDefault();
-
-    const pastedText = event.clipboardData?.getData("text") ?? "";
-    input.value = sanitizeNumericValue(pastedText, allowDecimal);
-  });
+function getAdjustedPrice() {
+  return parseNumber(carPriceInput.value) + parseNumber(specialColorInput.value) + parseNumber(supportDownPaymentInput.value);
 }
 
-function populateDatalist(datalist, values) {
-  datalist.innerHTML = values
-    .map((value) => `<option value="${value}"></option>`)
-    .join("");
+function getSelectedModelEntries() {
+  return TOYOTA_MODEL_DATA[carModelInput.value.trim()] ?? [];
 }
 
 function populateCarModels() {
-  populateDatalist(carModelOptions, Object.keys(TOYOTA_MODEL_DATA).sort((a, b) => a.localeCompare(b)));
+  const modelNames = Object.keys(TOYOTA_MODEL_DATA).sort((left, right) => left.localeCompare(right, "th"));
+  carModelOptions.innerHTML = modelNames.map((model) => `<option value="${model}"></option>`).join("");
 }
 
 function populateCarSubmodels() {
+  const entries = getSelectedModelEntries();
+  carSubmodelOptions.innerHTML = entries
+    .map((entry) => `<option value="${entry.name}"></option>`)
+    .join("");
+}
+
+function applySelectedSubmodelPrice(options = {}) {
   const selectedModel = carModelInput.value.trim();
-  const submodels = TOYOTA_MODEL_DATA[selectedModel] ?? [];
+  const selectedSubmodel = carSubmodelInput.value.trim();
+  const entries = TOYOTA_MODEL_DATA[selectedModel] ?? [];
+  const matchedEntry = entries.find((entry) => entry.name === selectedSubmodel);
 
-  populateDatalist(carSubmodelOptions, submodels);
-
-  if (!submodels.includes(carSubmodelInput.value.trim())) {
-    carSubmodelInput.value = "";
+  if (!matchedEntry) {
+    return false;
   }
+
+  formatInputValue(carPriceInput, matchedEntry.price);
+
+  if (options.showMessage !== false) {
+    setMessage(autoPriceNote);
+  }
+
+  if (downPaymentPercentSelect.value !== "custom") {
+    syncDownPaymentWithPercent();
+  } else {
+    calculateLoan();
+  }
+
+  return true;
 }
 
-function isBalloonMode() {
-  return calculationTypeInput.value === "balloon";
-}
+function syncDownPaymentHint() {
+  const adjustedPrice = getAdjustedPrice();
+  const percentValue = downPaymentPercentSelect.value;
 
-function calculateAdjustedPrice(carPrice, specialColor, supportDownPayment) {
-  return carPrice + specialColor + supportDownPayment;
-}
-
-function calculateDownPaymentFromPercent(percent, adjustedPrice) {
-  return adjustedPrice * (percent / 100);
-}
-
-function updateDownPaymentHint(percent, adjustedPrice) {
-  if (!Number.isFinite(percent)) {
-    downPaymentPercentHint.textContent = "ผู้ใช้กำหนดยอดเงินดาวน์เอง";
+  if (percentValue === "custom") {
+    if (adjustedPrice > 0) {
+      const currentPercent = (parseNumber(downPaymentInput.value) / adjustedPrice) * 100;
+      downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber(currentPercent)}% ของราคารถรวม`;
+    } else {
+      downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
+    }
     return;
   }
 
-  downPaymentPercentHint.textContent = `คิดจาก ${formatNumber(percent)}% ของราคารถรวม ${formatCurrency(adjustedPrice)} บาท`;
+  downPaymentPercentHint.textContent = `ระบบจะคำนวณยอดเงินดาวน์จาก ${percentValue}% ของราคารถรวม`;
 }
 
-function updateCustomDownPaymentOption(percent) {
-  const customOption = downPaymentPercentInput.querySelector(`option[value="${CUSTOM_DOWN_PAYMENT_VALUE}"]`);
-
-  if (!Number.isFinite(percent)) {
-    customOption.textContent = "กำหนดเอง";
-    return;
-  }
-
-  customOption.textContent = `กำหนดเอง (${formatNumber(percent)}%)`;
-}
-
-function syncDownPaymentFromPercent() {
-  const adjustedPrice = calculateAdjustedPrice(
-    parseNumericInput(carPriceInput.value),
-    parseNumericInput(specialColorInput.value),
-    parseNumericInput(supportDownPaymentInput.value)
-  );
-  const selectedPercent = downPaymentPercentInput.value;
-
-  if (selectedPercent === CUSTOM_DOWN_PAYMENT_VALUE) {
-    const downPayment = parseNumericInput(downPaymentInput.value);
-    const percent = adjustedPrice > 0 ? (downPayment / adjustedPrice) * 100 : 0;
-    updateCustomDownPaymentOption(percent);
-    updateDownPaymentHint(percent, adjustedPrice);
-    return;
-  }
-
-  const percent = parseNumericInput(selectedPercent);
-
-  if (!Number.isFinite(adjustedPrice) || !Number.isFinite(percent)) {
-    return;
-  }
-
-  downPaymentInput.value = formatNumber(calculateDownPaymentFromPercent(percent, adjustedPrice));
-  updateCustomDownPaymentOption(Number.NaN);
-  updateDownPaymentHint(percent, adjustedPrice);
-}
-
-function syncPercentFromDownPayment() {
-  const adjustedPrice = calculateAdjustedPrice(
-    parseNumericInput(carPriceInput.value),
-    parseNumericInput(specialColorInput.value),
-    parseNumericInput(supportDownPaymentInput.value)
-  );
-  const downPayment = parseNumericInput(downPaymentInput.value);
-
-  if (!Number.isFinite(adjustedPrice) || adjustedPrice <= 0 || !Number.isFinite(downPayment)) {
-    downPaymentPercentInput.value = CUSTOM_DOWN_PAYMENT_VALUE;
-    updateCustomDownPaymentOption(Number.NaN);
-    updateDownPaymentHint(Number.NaN, adjustedPrice);
-    return;
-  }
-
-  const percent = (downPayment / adjustedPrice) * 100;
-  const matchingOption = Array.from(downPaymentPercentInput.options)
-    .find((option) => option.value !== CUSTOM_DOWN_PAYMENT_VALUE && Number(option.value) === Number(percent));
-
-  if (matchingOption) {
-    downPaymentPercentInput.value = matchingOption.value;
-    updateCustomDownPaymentOption(Number.NaN);
-    updateDownPaymentHint(percent, adjustedPrice);
-    return;
-  }
-
-  downPaymentPercentInput.value = CUSTOM_DOWN_PAYMENT_VALUE;
-  updateCustomDownPaymentOption(percent);
-  updateDownPaymentHint(percent, adjustedPrice);
-}
-
-function toggleBalloonMode() {
-  const balloonMode = isBalloonMode();
-
-  rvField.classList.toggle("is-hidden", !balloonMode);
-  balloonPaymentResult.classList.toggle("is-hidden", !balloonMode);
-  monthlyPaymentLabel.textContent = balloonMode
-    ? "ค่างวดรายเดือน (ไม่รวม RV งวดสุดท้าย)"
+function toggleCalculationType() {
+  const isBalloon = calculationTypeSelect.value === "balloon";
+  rvField.classList.toggle("is-hidden", !isBalloon);
+  balloonPaymentResult.classList.toggle("is-hidden", !isBalloon);
+  monthlyPaymentLabel.textContent = isBalloon
+    ? "ค่างวดต่อเดือน (ไม่รวม RV งวดสุดท้าย)"
     : "ค่างวดต่อเดือน (บาท)";
 }
 
-function calculateStandardPayment(loanAmount, monthlyRate, loanTermMonths) {
-  if (monthlyRate === 0) {
-    return loanAmount / loanTermMonths;
+function syncDownPaymentWithPercent() {
+  const adjustedPrice = getAdjustedPrice();
+  const percentValue = downPaymentPercentSelect.value;
+
+  if (percentValue !== "custom") {
+    const computedDownPayment = adjustedPrice * (parseNumber(percentValue) / 100);
+    formatInputValue(downPaymentInput, computedDownPayment);
   }
 
-  const growthFactor = (1 + monthlyRate) ** loanTermMonths;
-  return (loanAmount * monthlyRate * growthFactor) / (growthFactor - 1);
+  syncDownPaymentHint();
+  calculateLoan();
 }
 
-function calculateBalloonPaymentPlan(loanAmount, annualRate, loanTermMonths, balloonPayment) {
-  const loanTermYears = loanTermMonths / 12;
-  const annualRateDecimal = annualRate / 100;
-  const totalWithInterest = (loanAmount * annualRateDecimal * loanTermYears) + loanAmount - balloonPayment;
-  const installmentMonths = loanTermMonths - 1;
+function handleManualDownPaymentChange() {
+  const adjustedPrice = getAdjustedPrice();
+  const downPayment = parseNumber(downPaymentInput.value);
 
-  return totalWithInterest / installmentMonths;
+  downPaymentPercentSelect.value = "custom";
+
+  if (adjustedPrice > 0) {
+    downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber((downPayment / adjustedPrice) * 100)}% ของราคารถรวม`;
+  } else {
+    downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
+  }
+
+  calculateLoan();
 }
 
-function updateFinanceDisplay(adjustedPrice, loanAmount, monthlyPayment, totalInterest, totalPayment, balloonPayment = 0) {
-  adjustedPriceDisplay.textContent = formatCurrency(adjustedPrice);
-  loanAmountDisplay.textContent = formatCurrency(loanAmount);
-  monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
-  totalInterestDisplay.textContent = formatCurrency(totalInterest);
-  totalPaymentDisplay.textContent = formatCurrency(totalPayment);
-  balloonPaymentDisplay.textContent = formatCurrency(balloonPayment);
-}
+function calculateStandardPayment(principal, annualRatePercent, loanTermMonths) {
+  if (principal <= 0 || loanTermMonths <= 0) {
+    return 0;
+  }
 
-function updateDayCostDisplay(values) {
-  dayDownPaymentDisplay.textContent = formatCurrency(values.downPayment);
-  daySupportDisplay.textContent = formatCurrency(values.supportDownPayment);
-  daySupportDiscountDisplay.textContent = formatCurrency(values.supportDiscount);
-  vatDisplay.textContent = formatCurrency(values.vatAmount);
-  driveAwayTotalDisplay.textContent = formatCurrency(values.driveAwayTotal);
-  remainingBalanceDisplay.textContent = formatCurrency(values.remainingBalance);
+  const monthlyRate = annualRatePercent / 100 / 12;
+
+  if (monthlyRate <= 0) {
+    return principal / loanTermMonths;
+  }
+
+  const factor = Math.pow(1 + monthlyRate, loanTermMonths);
+  return principal * monthlyRate * factor / (factor - 1);
 }
 
 function clearResults() {
-  updateFinanceDisplay(0, 0, 0, 0, 0, 0);
-  updateDayCostDisplay({
-    downPayment: 0,
-    supportDownPayment: 0,
-    supportDiscount: 0,
-    vatAmount: 0,
-    driveAwayTotal: 0,
-    remainingBalance: 0
-  });
+  monthlyPaymentDisplay.textContent = "0.00";
+  balloonPaymentDisplay.textContent = "0.00";
+  loanAmountDisplay.textContent = "0.00";
+  adjustedPriceDisplay.textContent = "0.00";
+  totalInterestDisplay.textContent = "0.00";
+  totalPaymentDisplay.textContent = "0.00";
+  dayDownPaymentDisplay.textContent = "0.00";
+  daySupportDisplay.textContent = "0.00";
+  daySupportDiscountDisplay.textContent = "0.00";
+  vatDisplay.textContent = "0.00";
+  driveAwayTotalDisplay.textContent = "0.00";
+  remainingBalanceDisplay.textContent = "0.00";
 }
 
-function getEditableFeeValues() {
-  return {
-    registrationFee: parseNumericInput(registrationFeeInput.value),
-    redPlateDeposit: parseNumericInput(redPlateDepositInput.value),
-    financeFee: parseNumericInput(financeFeeInput.value),
-    bookingDeposit: parseNumericInput(bookingDepositInput.value),
-    extraTransfer: parseNumericInput(extraTransferInput.value)
-  };
-}
+function calculateLoan() {
+  const carPrice = parseNumber(carPriceInput.value);
+  const specialColor = parseNumber(specialColorInput.value);
+  const supportDownPayment = parseNumber(supportDownPaymentInput.value);
+  const downPayment = parseNumber(downPaymentInput.value);
+  const supportDiscount = parseNumber(supportDiscountInput.value);
+  const annualRatePercent = parseNumber(interestRateInput.value);
+  const loanTermMonths = parseNumber(loanTermSelect.value);
+  const loanTermYears = loanTermMonths / 12;
+  const isBalloon = calculationTypeSelect.value === "balloon";
 
-function calculateDayCosts(downPayment, supportDownPayment, supportDiscount) {
-  const fees = getEditableFeeValues();
+  const adjustedPrice = carPrice + specialColor + supportDownPayment;
+  const loanAmount = Math.max(adjustedPrice - downPayment, 0);
+  const rvPercentage = parseNumber(rvPercentageInput.value);
+  const balloonPayment = isBalloon ? carPrice * (rvPercentage / 100) : 0;
+
+  let monthlyPayment = 0;
+  if (isBalloon) {
+    const monthlyInstallments = Math.max(loanTermMonths - 1, 1);
+    monthlyPayment = ((loanAmount * (annualRatePercent / 100) * loanTermYears) + loanAmount - balloonPayment) / monthlyInstallments;
+  } else {
+    monthlyPayment = calculateStandardPayment(loanAmount, annualRatePercent, loanTermMonths);
+  }
+
+  const totalPayment = isBalloon
+    ? (monthlyPayment * Math.max(loanTermMonths - 1, 0)) + balloonPayment
+    : monthlyPayment * loanTermMonths;
+  const totalInterest = Math.max(totalPayment - loanAmount, 0);
+
+  const registrationFee = parseNumber(registrationFeeInput.value);
+  const redPlateDeposit = parseNumber(redPlateDepositInput.value);
+  const financeFee = parseNumber(financeFeeInput.value);
+  const bookingDeposit = parseNumber(bookingDepositInput.value);
+  const extraTransfer = parseNumber(extraTransferInput.value);
   const vatAmount = (supportDownPayment + supportDiscount) * 0.03;
-  const discountedDownPayment = downPayment - supportDownPayment - supportDiscount;
-  const driveAwayTotal =
-    discountedDownPayment +
-    fees.registrationFee +
-    fees.redPlateDeposit +
-    fees.financeFee +
-    vatAmount;
-  const remainingBalance = driveAwayTotal - fees.bookingDeposit + fees.extraTransfer;
+  const driveAwayTotal = (downPayment - supportDownPayment - supportDiscount) + registrationFee + redPlateDeposit + financeFee + vatAmount;
+  const remainingBalance = driveAwayTotal - bookingDeposit + extraTransfer;
 
-  return {
-    downPayment,
-    supportDownPayment,
-    supportDiscount,
-    vatAmount,
-    driveAwayTotal,
-    remainingBalance
-  };
+  monthlyPaymentDisplay.textContent = formatNumber(monthlyPayment);
+  balloonPaymentDisplay.textContent = formatNumber(balloonPayment);
+  loanAmountDisplay.textContent = formatNumber(loanAmount);
+  adjustedPriceDisplay.textContent = formatNumber(adjustedPrice);
+  totalInterestDisplay.textContent = formatNumber(totalInterest);
+  totalPaymentDisplay.textContent = formatNumber(totalPayment);
+
+  dayDownPaymentDisplay.textContent = formatNumber(downPayment);
+  daySupportDisplay.textContent = formatNumber(supportDownPayment);
+  daySupportDiscountDisplay.textContent = formatNumber(supportDiscount);
+  vatDisplay.textContent = formatNumber(vatAmount);
+  driveAwayTotalDisplay.textContent = formatNumber(driveAwayTotal);
+  remainingBalanceDisplay.textContent = formatNumber(remainingBalance);
 }
 
-function formatAllInputs() {
-  [
-    carPriceInput,
-    specialColorInput,
-    supportDownPaymentInput,
-    downPaymentInput,
-    supportDiscountInput,
-    interestRateInput,
-    rvPercentageInput,
-    registrationFeeInput,
-    redPlateDepositInput,
-    financeFeeInput,
-    bookingDepositInput,
-    extraTransferInput
-  ].forEach((input) => formatInputValue(input));
-}
+function resetFormState() {
+  form.reset();
 
-function resetEditableFeeInputs() {
-  registrationFeeInput.value = formatNumber(EDITABLE_FEE_DEFAULTS.registrationFee);
-  redPlateDepositInput.value = formatNumber(EDITABLE_FEE_DEFAULTS.redPlateDeposit);
-  financeFeeInput.value = formatNumber(EDITABLE_FEE_DEFAULTS.financeFee);
-  bookingDepositInput.value = formatNumber(EDITABLE_FEE_DEFAULTS.bookingDeposit);
-  extraTransferInput.value = formatNumber(EDITABLE_FEE_DEFAULTS.extraTransfer);
-}
+  carModelInput.value = "";
+  carSubmodelInput.value = "";
+  carSubmodelOptions.innerHTML = "";
 
-function clearEditableFeeInputs() {
+  carPriceInput.value = "";
+  specialColorInput.value = "";
+  supportDownPaymentInput.value = "";
+  downPaymentInput.value = "";
+  supportDiscountInput.value = "";
+  interestRateInput.value = "";
+  rvPercentageInput.value = "";
+
   registrationFeeInput.value = "";
   redPlateDepositInput.value = "";
   financeFeeInput.value = "";
   bookingDepositInput.value = "";
   extraTransferInput.value = "";
-}
 
-function recalculate() {
-  form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
-}
+  calculationTypeSelect.value = "balloon";
+  downPaymentPercentSelect.value = "15";
+  loanTermSelect.value = "84";
 
-function calculateInstallment(event) {
-  event.preventDefault();
-
-  const calculationType = calculationTypeInput.value;
-  const carPrice = parseNumericInput(carPriceInput.value);
-  const specialColor = parseNumericInput(specialColorInput.value);
-  const supportDownPayment = parseNumericInput(supportDownPaymentInput.value);
-  const downPayment = parseNumericInput(downPaymentInput.value);
-  const supportDiscount = parseNumericInput(supportDiscountInput.value);
-  const annualRate = parseNumericInput(interestRateInput.value);
-  const loanTermMonths = parseNumericInput(loanTermInput.value);
-  const rvPercentage = isBalloonMode()
-    ? parseNumericInput(rvPercentageInput.value)
-    : 0;
-  const editableFees = Object.values(getEditableFeeValues());
-
-  const allValues = [
-    carPrice,
-    specialColor,
-    supportDownPayment,
-    downPayment,
-    supportDiscount,
-    annualRate,
-    loanTermMonths,
-    ...editableFees
-  ];
-
-  if (
-    allValues.some((value) => !Number.isFinite(value) || value < 0) ||
-    loanTermMonths <= 0
-  ) {
-    message.textContent = "กรุณากรอกข้อมูลให้ถูกต้อง และตัวเลขต้องไม่ติดลบ";
-    return;
-  }
-
-  if (calculationType === "balloon" && (!Number.isFinite(rvPercentage) || rvPercentage < 0 || rvPercentage >= 100)) {
-    message.textContent = "กรุณากรอก RV เป็นเปอร์เซ็นต์ระหว่าง 0 ถึงน้อยกว่า 100";
-    return;
-  }
-
-  const adjustedPrice = calculateAdjustedPrice(carPrice, specialColor, supportDownPayment);
-  const loanAmount = adjustedPrice - downPayment;
-
-  if (loanAmount <= 0) {
-    message.textContent = "เงินดาวน์ต้องน้อยกว่ายอดราคารถรวม";
-    updateFinanceDisplay(adjustedPrice, 0, 0, 0, 0, 0);
-    updateDayCostDisplay(calculateDayCosts(downPayment, supportDownPayment, supportDiscount));
-    syncPercentFromDownPayment();
-    return;
-  }
-
-  const balloonPayment = calculationType === "balloon"
-    ? carPrice * (rvPercentage / 100)
-    : 0;
-
-  if (calculationType === "balloon" && balloonPayment >= loanAmount) {
-    message.textContent = "ยอด RV ต้องน้อยกว่ายอดจัดไฟแนนซ์";
-    updateFinanceDisplay(adjustedPrice, loanAmount, 0, 0, 0, balloonPayment);
-    updateDayCostDisplay(calculateDayCosts(downPayment, supportDownPayment, supportDiscount));
-    syncPercentFromDownPayment();
-    return;
-  }
-
-  const monthlyRate = annualRate / 100 / 12;
-  const monthlyPayment = calculationType === "balloon"
-    ? calculateBalloonPaymentPlan(loanAmount, annualRate, loanTermMonths, balloonPayment)
-    : calculateStandardPayment(loanAmount, monthlyRate, loanTermMonths);
-  const totalPayment = (monthlyPayment * loanTermMonths) + balloonPayment;
-  const totalInterest = totalPayment - loanAmount;
-
-  updateFinanceDisplay(adjustedPrice, loanAmount, monthlyPayment, totalInterest, totalPayment, balloonPayment);
-  updateDayCostDisplay(calculateDayCosts(downPayment, supportDownPayment, supportDiscount));
-  syncPercentFromDownPayment();
-  formatAllInputs();
-
-  message.textContent = calculationType === "balloon"
-    ? "คำนวณแคมเปญบอลลูนพร้อมค่าใช้จ่ายวันรับรถเรียบร้อยแล้ว"
-    : "คำนวณค่างวดและค่าใช้จ่ายวันรับรถเรียบร้อยแล้ว";
-}
-
-function resetFormState() {
-  calculationTypeInput.value = FORM_DEFAULTS.calculationType;
-  carModelInput.value = "";
-  carSubmodelInput.value = "";
-  carPriceInput.value = "";
-  specialColorInput.value = "";
-  supportDownPaymentInput.value = "";
-  downPaymentPercentInput.value = FORM_DEFAULTS.downPaymentPercent;
-  downPaymentInput.value = "";
-  supportDiscountInput.value = "";
-  interestRateInput.value = "";
-  loanTermInput.value = FORM_DEFAULTS.loanTerm;
-  rvPercentageInput.value = "";
-  clearEditableFeeInputs();
-  populateCarSubmodels();
-  toggleBalloonMode();
-  downPaymentPercentHint.textContent = "";
+  toggleCalculationType();
   clearResults();
-  message.textContent = "";
+  syncDownPaymentHint();
+  setMessage("");
 }
+
+function handleModelChange() {
+  populateCarSubmodels();
+
+  const entries = getSelectedModelEntries();
+  const hasMatchingSubmodel = entries.some((entry) => entry.name === carSubmodelInput.value.trim());
+
+  if (!hasMatchingSubmodel) {
+    carSubmodelInput.value = "";
+  }
+
+  if (entries.length === 1) {
+    carSubmodelInput.value = entries[0].name;
+    applySelectedSubmodelPrice();
+    return;
+  }
+
+  if (entries.length > 0) {
+    setMessage("เลือกรุ่นย่อยเพื่อให้ระบบเติมราคารถอัตโนมัติ");
+  } else if (carModelInput.value.trim()) {
+    setMessage("ยังไม่พบรุ่นรถที่ตรงกับรายการ Toyota Thailand ปัจจุบัน");
+  } else {
+    setMessage("");
+  }
+
+  if (downPaymentPercentSelect.value !== "custom") {
+    syncDownPaymentWithPercent();
+  } else {
+    calculateLoan();
+  }
+}
+
+function handleSubmodelChange() {
+  const applied = applySelectedSubmodelPrice();
+
+  if (!applied && carSubmodelInput.value.trim()) {
+    setMessage("ยังไม่พบรุ่นย่อยที่ตรงกับรุ่นรถที่เลือก");
+  } else if (!carSubmodelInput.value.trim()) {
+    setMessage("");
+    if (downPaymentPercentSelect.value !== "custom") {
+      syncDownPaymentWithPercent();
+    } else {
+      calculateLoan();
+    }
+  }
+}
+
+function handleFormattedNumericInput(event) {
+  const input = event.target;
+  const parsedValue = parseNumber(input.value);
+
+  if (input.value.trim() === "") {
+    return;
+  }
+
+  formatInputValue(input, parsedValue);
+}
+
+function initializeCalculator() {
+  populateCarModels();
+  toggleCalculationType();
+  syncDownPaymentHint();
+  calculateLoan();
+}
+
+calculationTypeSelect.addEventListener("change", () => {
+  toggleCalculationType();
+  calculateLoan();
+});
+
+carModelInput.addEventListener("input", handleModelChange);
+carModelInput.addEventListener("change", handleModelChange);
+carSubmodelInput.addEventListener("input", handleSubmodelChange);
+carSubmodelInput.addEventListener("change", handleSubmodelChange);
+
+downPaymentPercentSelect.addEventListener("change", syncDownPaymentWithPercent);
+downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
 
 [
   carPriceInput,
   specialColorInput,
   supportDownPaymentInput,
-  downPaymentInput,
   supportDiscountInput,
   interestRateInput,
   rvPercentageInput,
@@ -600,66 +522,26 @@ function resetFormState() {
   bookingDepositInput,
   extraTransferInput
 ].forEach((input) => {
-  attachNumericInputBehavior(input);
-  input.addEventListener("blur", () => formatInputValue(input));
-});
-
-[carPriceInput, specialColorInput, supportDownPaymentInput].forEach((input) => {
-  input.addEventListener("blur", () => {
-    syncDownPaymentFromPercent();
-    recalculate();
-  });
-});
-
-[registrationFeeInput, redPlateDepositInput, financeFeeInput, bookingDepositInput, extraTransferInput].forEach((input) => {
   input.addEventListener("input", () => {
-    recalculate();
+    if (input === carPriceInput) {
+      setMessage("");
+    }
+
+    if (downPaymentPercentSelect.value !== "custom" && input !== supportDiscountInput && input !== interestRateInput && input !== rvPercentageInput && input !== registrationFeeInput && input !== redPlateDepositInput && input !== financeFeeInput && input !== bookingDepositInput && input !== extraTransferInput) {
+      syncDownPaymentWithPercent();
+      return;
+    }
+
+    calculateLoan();
   });
 
-  input.addEventListener("blur", () => {
-    formatInputValue(input);
-    recalculate();
-  });
+  input.addEventListener("blur", handleFormattedNumericInput);
 });
 
-downPaymentPercentInput.addEventListener("change", () => {
-  syncDownPaymentFromPercent();
-  recalculate();
+loanTermSelect.addEventListener("change", calculateLoan);
+
+resetButton.addEventListener("click", () => {
+  resetFormState();
 });
 
-downPaymentInput.addEventListener("input", () => {
-  syncPercentFromDownPayment();
-});
-
-downPaymentInput.addEventListener("blur", () => {
-  formatInputValue(downPaymentInput);
-  syncPercentFromDownPayment();
-});
-
-loanTermInput.addEventListener("change", () => {
-  recalculate();
-});
-
-carModelInput.addEventListener("input", () => {
-  populateCarSubmodels();
-});
-
-carModelInput.addEventListener("change", () => {
-  populateCarSubmodels();
-});
-
-form.addEventListener("submit", calculateInstallment);
-calculationTypeInput.addEventListener("change", () => {
-  toggleBalloonMode();
-  recalculate();
-});
-if (resetFormButton) {
-  resetFormButton.addEventListener("click", resetFormState);
-}
-
-populateCarModels();
-populateCarSubmodels();
-toggleBalloonMode();
-resetEditableFeeInputs();
-syncDownPaymentFromPercent();
-clearResults();
+initializeCalculator();
