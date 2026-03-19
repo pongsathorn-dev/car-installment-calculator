@@ -10,76 +10,198 @@
   <main class="app-shell">
     <section class="card hero">
       <div>
-        <p class="eyebrow">เครื่องมือสำหรับนำเสนอลูกค้า</p>
-        <h1>คำนวณค่างวดรถยนต์</h1>
-        <p class="intro">
-          ช่วยคำนวณค่างวดรายเดือนอย่างรวดเร็วและชัดเจน เพื่อใช้ประกอบการนำเสนอทางเลือกด้านไฟแนนซ์ให้ลูกค้า
-        </p>
+        <h1>คำนวณค่างวดรถยนต์ของแต๋วแว๋ว</h1>
       </div>
     </section>
 
     <section class="card calculator">
-      <form id="loan-form" class="form-grid">
+      <form id="loan-form" class="form-grid" autocomplete="off">
         <label>
           <span>วิธีคำนวณ</span>
           <select id="calculation-type" name="calculation-type">
             <option value="standard">แบบปกติ</option>
-            <option value="balloon">แคมเปญบอลลูน</option>
+            <option value="balloon" selected>แคมเปญบอลลูน</option>
           </select>
         </label>
 
         <label>
+          <span>รุ่นรถ</span>
+          <input id="car-model" name="car-model" type="text" list="car-model-options" placeholder="พิมพ์หรือเลือก รุ่นรถ Toyota">
+          <datalist id="car-model-options"></datalist>
+        </label>
+
+        <label>
+          <span>รุ่นย่อย</span>
+          <input id="car-submodel" name="car-submodel" type="text" list="car-submodel-options" placeholder="พิมพ์หรือเลือก รุ่นย่อย">
+          <datalist id="car-submodel-options"></datalist>
+        </label>
+
+        <label>
           <span>ราคารถ</span>
-          <input id="car-price" name="car-price" type="text" inputmode="decimal" value="850,000" required>
+          <input id="car-price" name="car-price" type="text" inputmode="decimal" value="644,000" required>
+        </label>
+
+        <label>
+          <span>สีพิเศษ</span>
+          <input id="special-color" name="special-color" type="text" inputmode="decimal" value="7,000">
+        </label>
+
+        <label>
+          <span>ช่วยดาวน์</span>
+          <input id="support-down-payment" name="support-down-payment" type="text" inputmode="decimal" value="50,000">
+        </label>
+
+        <label>
+          <span>เปอร์เซ็นต์เงินดาวน์</span>
+          <select id="down-payment-percent" name="down-payment-percent">
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="10">10%</option>
+            <option value="15" selected>15%</option>
+            <option value="20">20%</option>
+            <option value="25">25%</option>
+            <option value="30">30%</option>
+            <option value="35">35%</option>
+            <option value="40">40%</option>
+            <option value="45">45%</option>
+            <option value="50">50%</option>
+            <option value="custom">กำหนดเอง</option>
+          </select>
         </label>
 
         <label>
           <span>เงินดาวน์</span>
-          <input id="down-payment" name="down-payment" type="text" inputmode="decimal" value="150,000" required>
+          <input id="down-payment" name="down-payment" type="text" inputmode="decimal" value="105,150" required>
+        </label>
+
+        <p id="down-payment-percent-hint" class="field-hint">
+          ระบบจะคำนวณยอดเงินดาวน์ตามเปอร์เซ็นต์ที่เลือกจากราคารถรวม
+        </p>
+
+        <label>
+          <span>ส่วนลดช่วยดาวน์</span>
+          <input id="support-discount" name="support-discount" type="text" inputmode="decimal" value="25,000">
         </label>
 
         <label>
           <span>อัตราดอกเบี้ยต่อปี (%)</span>
-          <input id="interest-rate" name="interest-rate" type="text" inputmode="decimal" value="3.5" required>
+          <input id="interest-rate" name="interest-rate" type="text" inputmode="decimal" value="3.55" required>
         </label>
 
         <label>
-          <span>ระยะเวลาผ่อน (เดือน)</span>
-          <input id="loan-term" name="loan-term" type="text" inputmode="numeric" value="60" required>
+          <span>ระยะเวลาผ่อน</span>
+          <select id="loan-term" name="loan-term">
+            <option value="12">1 ปี (12 เดือน)</option>
+            <option value="24">2 ปี (24 เดือน)</option>
+            <option value="36">3 ปี (36 เดือน)</option>
+            <option value="48">4 ปี (48 เดือน)</option>
+            <option value="60">5 ปี (60 เดือน)</option>
+            <option value="72">6 ปี (72 เดือน)</option>
+            <option value="84" selected>7 ปี (84 เดือน)</option>
+          </select>
         </label>
 
-        <label id="balloon-payment-field" class="is-hidden">
-          <span>ยอดบอลลูนงวดสุดท้าย (บาท)</span>
-          <input id="balloon-payment" name="balloon-payment" type="text" inputmode="decimal" value="250,000">
+        <label id="rv-field" class="is-hidden">
+          <span>RV (%)</span>
+          <input id="rv-percentage" name="rv-percentage" type="text" inputmode="decimal" value="20">
         </label>
 
-        <button type="submit">คำนวณค่างวด</button>
+        <div class="form-actions">
+          <button type="button" id="reset-form" class="secondary-button">เคลียร์ข้อมูล</button>
+        </div>
       </form>
 
-      <div class="results" aria-live="polite">
-        <div class="result-item">
-          <span>ยอดจัดไฟแนนซ์ (บาท)</span>
-          <strong id="loan-amount-display">0.00</strong>
-        </div>
-        <div class="result-item highlight">
-          <span id="monthly-payment-label">ค่างวดต่อเดือน (บาท)</span>
-          <strong id="monthly-payment-display">0.00</strong>
-        </div>
-        <div class="result-item">
-          <span>ดอกเบี้ยรวม (บาท)</span>
-          <strong id="total-interest-display">0.00</strong>
-        </div>
-        <div id="balloon-payment-result" class="result-item is-hidden">
-          <span>ยอดบอลลูนงวดสุดท้าย (บาท)</span>
-          <strong id="balloon-payment-display">0.00</strong>
-        </div>
-        <div class="result-item">
-          <span>ยอดชำระทั้งหมด (บาท)</span>
-          <strong id="total-payment-display">0.00</strong>
-        </div>
-      </div>
-
       <p id="message" class="message" role="status"></p>
+    </section>
+
+    <section class="card summary-card">
+      <section class="summary-block" aria-labelledby="finance-summary-heading">
+        <div class="section-heading">
+          <h2 id="finance-summary-heading">สรุปไฟแนนซ์</h2>
+          <span>ยอดสำคัญที่ใช้เสนอค่างวดและยอดจัด</span>
+        </div>
+        <div class="results finance-results" aria-live="polite">
+          <div class="result-item hero-result highlight">
+            <span id="monthly-payment-label">ค่างวดต่อเดือน (บาท)</span>
+            <strong id="monthly-payment-display">0.00</strong>
+          </div>
+          <div id="balloon-payment-result" class="result-item hero-result is-hidden">
+            <span>ยอด RV งวดสุดท้าย (บาท)</span>
+            <strong id="balloon-payment-display">0.00</strong>
+          </div>
+          <div class="result-item compact-result">
+            <span>ยอดจัดไฟแนนซ์ (บาท)</span>
+            <strong id="loan-amount-display">0.00</strong>
+          </div>
+          <div class="result-item compact-result">
+            <span>ราคารถรวมสีพิเศษและช่วยดาวน์ (บาท)</span>
+            <strong id="adjusted-price-display">0.00</strong>
+          </div>
+          <div class="result-item compact-result">
+            <span>ดอกเบี้ยรวม (บาท)</span>
+            <strong id="total-interest-display">0.00</strong>
+          </div>
+          <div class="result-item summary-total">
+            <span>ยอดชำระทั้งหมด (บาท)</span>
+            <strong id="total-payment-display">0.00</strong>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="card summary-card">
+      <section class="summary-block day-costs" aria-labelledby="day-costs-heading">
+        <div class="section-heading">
+          <h2 id="day-costs-heading">ค่าใช้จ่ายวันรับรถ</h2>
+          <span>แก้ตัวเลขค่าใช้จ่ายได้ทันทีและระบบจะรวมยอดให้อัตโนมัติ</span>
+        </div>
+        <div class="results day-costs-grid">
+          <div class="result-item compact-result">
+            <span>เงินดาวน์</span>
+            <strong id="day-down-payment-display">0.00</strong>
+          </div>
+          <div class="result-item compact-result">
+            <span>ส่วนลดช่วยดาวน์</span>
+            <strong id="day-support-display">0.00</strong>
+          </div>
+          <div class="result-item compact-result">
+            <span>ส่วนลดดาวน์</span>
+            <strong id="day-support-discount-display">0.00</strong>
+          </div>
+          <label class="result-item compact-result editable-result">
+            <span>ค่าจดทะเบียน</span>
+            <input id="registration-fee-input" type="text" inputmode="decimal" value="2,300">
+          </label>
+          <label class="result-item compact-result editable-result">
+            <span>ค่ามัดจำป้ายแดง</span>
+            <input id="red-plate-deposit-input" type="text" inputmode="decimal" value="3,500">
+          </label>
+          <label class="result-item compact-result editable-result">
+            <span>ค่าธรรมเนียมไฟแนนซ์</span>
+            <input id="finance-fee-input" type="text" inputmode="decimal" value="800">
+          </label>
+          <div class="result-item compact-result">
+            <span>VAT 3%</span>
+            <strong id="vat-display">0.00</strong>
+          </div>
+          <label class="result-item compact-result editable-result">
+            <span>หักเงินจอง</span>
+            <input id="booking-deposit-input" type="text" inputmode="decimal" value="5,000">
+          </label>
+          <label class="result-item compact-result editable-result">
+            <span>ผ่านไฟแนนซ์ลูกค้าโอนเพิ่ม</span>
+            <input id="extra-transfer-input" type="text" inputmode="decimal" value="2,000">
+          </label>
+          <div class="result-item summary-total">
+            <span>รวมค่าใช้จ่ายออกรถ</span>
+            <strong id="drive-away-total-display">0.00</strong>
+          </div>
+          <div class="result-item hero-result highlight">
+            <span>เหลือยอดชำระ</span>
+            <strong id="remaining-balance-display">0.00</strong>
+          </div>
+        </div>
+      </section>
     </section>
   </main>
 
