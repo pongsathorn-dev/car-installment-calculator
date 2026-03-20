@@ -442,18 +442,57 @@ function calculateStandardPayment(principal, annualRatePercent, loanTermMonths) 
 }
 
 function buildGiftOptionMarkup() {
-  giftOptionsContainer.innerHTML = giftOptions.map((label) => {
+  giftOptionsContainer.innerHTML = giftOptions.map((label, index) => {
     const checked = selectedGifts.some((gift) => gift.label === label) ? "checked" : "";
+    const moveUpButton = index === 0
+      ? ""
+      : `<button type="button" class="gift-option-move" data-move-option="${label}" data-direction="up"></button>`;
+    const moveDownButton = index === giftOptions.length - 1
+      ? ""
+      : `<button type="button" class="gift-option-move" data-move-option="${label}" data-direction="down"></button>`;
     return `
       <div class="gift-option">
         <label class="gift-option-select">
           <input type="checkbox" value="${label}" ${checked}>
           <span>${label}</span>
         </label>
+        <div class="gift-option-actions">
+          <button type="button" class="gift-option-move" data-move-option="${label}" data-direction="up">ขึ้น</button>
+          <button type="button" class="gift-option-move" data-move-option="${label}" data-direction="down">ลง</button>
+        </div>
         <button type="button" class="gift-option-remove" data-remove-option="${label}">ลบ</button>
       </div>
     `;
   }).join("");
+
+  giftOptionsContainer.querySelectorAll(".gift-option-move").forEach((button) => {
+    const direction = button.getAttribute("data-direction");
+    button.textContent = direction === "up" ? "↑" : "↓";
+    button.setAttribute("aria-label", direction === "up" ? "เลื่อนขึ้น" : "เลื่อนลง");
+  });
+
+  giftOptionsContainer.querySelectorAll(".gift-option-remove").forEach((button) => {
+    button.textContent = "🗑";
+    button.setAttribute("aria-label", "ลบรายการ");
+  });
+  giftOptionsContainer.querySelectorAll(".gift-option").forEach((option, index) => {
+    const actions = option.querySelector(".gift-option-actions");
+    const removeButton = option.querySelector(".gift-option-remove");
+    const moveUpButton = option.querySelector('.gift-option-move[data-direction="up"]');
+    const moveDownButton = option.querySelector('.gift-option-move[data-direction="down"]');
+
+    if (actions instanceof HTMLElement && removeButton instanceof HTMLElement && removeButton.parentElement !== actions) {
+      actions.appendChild(removeButton);
+    }
+
+    if (moveUpButton instanceof HTMLElement) {
+      moveUpButton.style.display = index === 0 ? "none" : "";
+    }
+
+    if (moveDownButton instanceof HTMLElement) {
+      moveDownButton.style.display = index === giftOptions.length - 1 ? "none" : "";
+    }
+  });
 }
 
 function addGiftOption() {
@@ -479,6 +518,22 @@ function removeGiftOption(label) {
   buildGiftOptionMarkup();
   renderSelectedGifts();
   calculateLoan();
+  saveGiftState();
+}
+
+function moveGiftOption(label, direction) {
+  const currentIndex = giftOptions.indexOf(label);
+  if (currentIndex === -1) {
+    return;
+  }
+
+  const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+  if (targetIndex < 0 || targetIndex >= giftOptions.length) {
+    return;
+  }
+
+  [giftOptions[currentIndex], giftOptions[targetIndex]] = [giftOptions[targetIndex], giftOptions[currentIndex]];
+  buildGiftOptionMarkup();
   saveGiftState();
 }
 
@@ -529,6 +584,13 @@ function renderSelectedGifts() {
       </div>
     </div>
   `).join("");
+}
+
+function clearSelectedGifts() {
+  selectedGifts = [];
+  selectedGiftsContainer.innerHTML = "";
+  renderSelectedGifts();
+  buildGiftOptionMarkup();
 }
 
 function syncSelectedGiftsFromModal() {
@@ -694,7 +756,7 @@ function buildSummaryText() {
     ? [
         `งวดที่ 1-${Math.max(summary.loanTermMonths - 1, 1)} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(getDisplayedMonthlyPayment(summary.monthlyPayment, true))} บาท`,
         `งวดที่ ${summary.loanTermMonths} (RV${formatPercent(summary.rvPercentage)}%) = ${formatSummaryNumber(summary.balloonPayment)} บาท`,
-        `( งวดที่ ${summary.loanTermMonths} ลูกค้าสามารถปิดยอดได้ หรือ สามารถผ่อนต่อได้อีก 2ปี คำนวณดอกเบี้ยจากไฟแนนซ์ )`
+        `( งวดที่ ${summary.loanTermMonths} ลูกค้าสามารถปิดยอดได้ หรือ สามารถผ่อนต่อได้อีก 2 ปี คำนวณดอกเบี้ยจากไฟแนนซ์ )`
       ]
     : [
         `งวดที่ 1-${summary.loanTermMonths} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(summary.monthlyPayment)} บาท`
@@ -710,7 +772,7 @@ function buildSummaryText() {
     `ราคาสุทธิ ${formatSummaryNumber(netPrice)} บาท`,
     `ดาวน์${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
     `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
-    `ผ่อน ${formatPercent(loanYears)}ปี`,
+    `ผ่อน ${formatPercent(loanYears)} ปี`,
     ...installmentLines,
     "",
     "🌼✨ ของแถม ✨🌼",
@@ -756,6 +818,11 @@ async function copySummaryText() {
 function resetFormState() {
   form.reset();
 
+  selectedGifts = [];
+  giftCustomInput.value = "";
+  selectedGiftsContainer.className = "gift-list empty-state";
+  selectedGiftsContainer.textContent = "ยังไม่ได้เลือกของแถม";
+
   carModelInput.value = "";
   carSubmodelInput.value = "";
   carSubmodelOptions.innerHTML = "";
@@ -778,8 +845,13 @@ function resetFormState() {
   downPaymentPercentSelect.value = "15";
   loanTermSelect.value = "84";
 
+  giftOptionsContainer.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+    input.checked = false;
+  });
+  closeGiftModal();
   toggleCalculationType();
   clearResults();
+  calculateLoan();
   syncDownPaymentHint();
   setMessage("");
 }
@@ -947,6 +1019,15 @@ selectedGiftsContainer.addEventListener("blur", (event) => {
 giftOptionsContainer.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const moveButton = target.closest("[data-move-option]");
+  if (moveButton instanceof HTMLElement) {
+    moveGiftOption(
+      moveButton.dataset.moveOption ?? "",
+      moveButton.dataset.direction ?? ""
+    );
     return;
   }
 

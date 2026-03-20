@@ -519,8 +519,9 @@ button:hover {
   grid-column: span 6;
 }
 
+.vat-pair-card,
 .vat-full-card {
-  grid-column: 1 / -1;
+  grid-column: span 6;
 }
 
 .settlement-card {
@@ -647,7 +648,7 @@ button:hover {
 
 .gift-option {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 72px;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
   padding: 12px 14px;
@@ -667,8 +668,41 @@ button:hover {
   margin-top: 3px;
 }
 
+.gift-option-actions {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.gift-option-move,
 .gift-option-remove {
-  padding: 10px 12px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 6px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.gift-option-move {
+  background: rgba(15, 118, 110, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  box-shadow: none;
+}
+
+.gift-option-move:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.gift-option-remove {
   border-radius: 12px;
   background: linear-gradient(135deg, #991b1b, #dc2626);
 }

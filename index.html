@@ -207,21 +207,22 @@
           </div>
 
           <div class="day-costs-section-grid">
-            <label class="result-item compact-result editable-result">
+            <label class="inline-input-card settlement-card">
               <span>ค่าจดทะเบียน</span>
               <input id="registration-fee-input" type="text" inputmode="decimal" value="2,300">
             </label>
-            <div class="result-item compact-result">
-              <span>ค่ามัดจำป้ายแดง (ได้คืน)</span>
-              <strong id="red-plate-deposit-input">3,500.00</strong>
-            </div>
-            <label class="result-item compact-result editable-result">
+            <label class="inline-input-card settlement-card">
               <span>ค่าธรรมเนียมไฟแนนซ์</span>
               <input id="finance-fee-input" type="text" inputmode="decimal" value="800">
             </label>
+
             <div class="result-item compact-result vat-full-card">
-              <span>VAT 3%</span>
+              <span>VAT 3% (บวกอุปกรณ์ + ส่วนลดช่วยดาวน์)</span>
               <strong id="vat-display">0.00</strong>
+            </div>
+            <div class="result-item compact-result vat-pair-card">
+              <span>ค่ามัดจำป้ายแดง (ได้คืน)</span>
+              <strong id="red-plate-deposit-input">3,500.00</strong>
             </div>
             <div class="result-item summary-total full-width-total highlight">
               <span>ยอดรวมวันรับรถก่อนหักเงินจอง</span>
