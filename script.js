@@ -94,10 +94,10 @@ const TOYOTA_MODEL_DATA = {
     { name: "2.4 AT Super SWB Attractive Package", price: 615000 }
   ],
   "Hilux Revo Standard Cab": [
-    { name: "2.4 Entry (ไม่มีกระบะ)", price: 584000 },
+    { name: "2.4 Entry (ไม่มีคอกกระบะ)", price: 584000 },
     { name: "2.4 Entry ช่วงล้อสั้น", price: 624000 },
     { name: "2.4 Entry", price: 624000 },
-    { name: "2.4 Entry AT (ไม่มีกระบะ)", price: 634000 },
+    { name: "2.4 Entry AT (ไม่มีคอกกระบะ)", price: 634000 },
     { name: "2.8 Entry", price: 639000 },
     { name: "2.4 Entry AT", price: 674000 }
   ],
@@ -157,7 +157,7 @@ const carSubmodelInput = document.getElementById("car-submodel");
 const carSubmodelOptions = document.getElementById("car-submodel-options");
 const carPriceInput = document.getElementById("car-price");
 const specialColorInput = document.getElementById("special-color");
-const supportDownPaymentInput = document.getElementById("support-down-payment");
+const accessoryInput = document.getElementById("support-down-payment");
 const downPaymentPercentSelect = document.getElementById("down-payment-percent");
 const downPaymentInput = document.getElementById("down-payment");
 const downPaymentPercentHint = document.getElementById("down-payment-percent-hint");
@@ -166,6 +166,7 @@ const interestRateInput = document.getElementById("interest-rate");
 const loanTermSelect = document.getElementById("loan-term");
 const rvField = document.getElementById("rv-field");
 const rvPercentageInput = document.getElementById("rv-percentage");
+const copySummaryButton = document.getElementById("copy-summary");
 const resetButton = document.getElementById("reset-form");
 const message = document.getElementById("message");
 
@@ -174,23 +175,53 @@ const monthlyPaymentDisplay = document.getElementById("monthly-payment-display")
 const balloonPaymentResult = document.getElementById("balloon-payment-result");
 const balloonPaymentDisplay = document.getElementById("balloon-payment-display");
 const loanAmountDisplay = document.getElementById("loan-amount-display");
-const adjustedPriceDisplay = document.getElementById("adjusted-price-display");
+const formPriceWithColorDisplay = document.getElementById("form-price-with-color-display");
+const formNetPriceDisplay = document.getElementById("form-net-price-display");
 const totalInterestDisplay = document.getElementById("total-interest-display");
 const totalPaymentDisplay = document.getElementById("total-payment-display");
 
 const dayDownPaymentDisplay = document.getElementById("day-down-payment-display");
 const daySupportDisplay = document.getElementById("day-support-display");
-const daySupportDiscountDisplay = document.getElementById("day-support-discount-display");
+const daySubtotalDisplay = document.getElementById("day-subtotal-display");
 const registrationFeeInput = document.getElementById("registration-fee-input");
-const redPlateDepositInput = document.getElementById("red-plate-deposit-input");
+const redPlateDepositDisplay = document.getElementById("red-plate-deposit-input");
 const financeFeeInput = document.getElementById("finance-fee-input");
 const vatDisplay = document.getElementById("vat-display");
 const bookingDepositInput = document.getElementById("booking-deposit-input");
 const extraTransferInput = document.getElementById("extra-transfer-input");
+const marginInput = document.getElementById("margin-input");
+const remainingMarginDisplay = document.getElementById("remaining-margin-display");
 const driveAwayTotalDisplay = document.getElementById("drive-away-total-display");
 const remainingBalanceDisplay = document.getElementById("remaining-balance-display");
 
+const addGiftButton = document.getElementById("add-gift-button");
+const selectedGiftsContainer = document.getElementById("selected-gifts");
+const giftModal = document.getElementById("gift-modal");
+const giftOptionsContainer = document.getElementById("gift-options");
+const giftModalCloseButton = document.getElementById("gift-modal-close");
+const giftModalCancelButton = document.getElementById("gift-modal-cancel");
+const giftModalConfirmButton = document.getElementById("gift-modal-confirm");
+const giftCustomInput = document.getElementById("gift-custom-input");
+const giftCustomAddButton = document.getElementById("gift-custom-add");
+
 const autoPriceNote = "อัปเดตราคารถจาก Toyota Thailand ตามรุ่นและรุ่นย่อยที่เลือก";
+const GIFT_OPTIONS = [
+  "🎁 ดอกเบี้ยพิเศษ",
+  "🎁 ประกันภัยชั้น 1",
+  "🎁 พ.ร.บ.",
+  "🎁 ฟิล์มกรองแสงบานหน้าเต็ม",
+  "🎁 ฟิล์มกรองแสงรอบคัน",
+  "🎁 กันสาดข้าง",
+  "🎁 ถาดท้าย",
+  "🎁 กรอบป้ายทะเบียน",
+  "🎁 ผ้ายางปูพื้น",
+  "🎁 เคลือบสีก่อนส่งมอบ",
+  "🎁 น้ำมัน 1,000 บาท",
+  "✅ ฟรีค่าแรงเช็คระยะ 6ครั้ง 1,000-50,000 กม.",
+  "✅ รับประกันผลิตภัณฑ์ 5ปี / 150,000 กม.(ตามเงื่อนไข)"
+];
+let selectedGifts = [];
+let giftOptions = [...GIFT_OPTIONS];
 
 function parseNumber(value) {
   const normalized = String(value ?? "").replace(/,/g, "").trim();
@@ -202,25 +233,97 @@ function parseNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function ceilDisplayValue(value) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.ceil(value);
+}
+
 function formatNumber(value) {
   return new Intl.NumberFormat("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(Number.isFinite(value) ? value : 0);
+    maximumFractionDigits: 0
+  }).format(ceilDisplayValue(value));
 }
 
 function formatInputValue(input, value) {
   input.value = value === "" ? "" : new Intl.NumberFormat("th-TH", {
-    maximumFractionDigits: 2
-  }).format(value);
+    maximumFractionDigits: 0
+  }).format(ceilDisplayValue(value));
+}
+
+function formatSummaryNumber(value) {
+  return new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 0
+  }).format(ceilDisplayValue(value));
+}
+
+function getDisplayedMonthlyPayment(value, isBalloon) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return isBalloon ? Math.ceil(value) : value;
+}
+
+function formatPercent(value) {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "");
 }
 
 function setMessage(text = "") {
   message.textContent = text;
 }
 
-function getAdjustedPrice() {
-  return parseNumber(carPriceInput.value) + parseNumber(specialColorInput.value) + parseNumber(supportDownPaymentInput.value);
+function saveGiftState() {
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (firebaseGiftStore?.saveGiftState) {
+    firebaseGiftStore.saveGiftState({
+      giftOptions
+    }).catch((error) => {
+      console.error("Failed to save gifts to Firebase:", error);
+    });
+  }
+}
+
+async function loadGiftStateFromFirebase() {
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (!firebaseGiftStore?.loadGiftState) {
+    return;
+  }
+
+  try {
+    const remoteState = await firebaseGiftStore.loadGiftState();
+    if (!remoteState) {
+      return;
+    }
+
+    const remoteGiftOptions = Array.isArray(remoteState.giftOptions)
+      ? remoteState.giftOptions.filter((item) => typeof item === "string" && item.trim())
+      : [];
+
+    if (remoteGiftOptions.length > 0) {
+      giftOptions = remoteGiftOptions;
+    }
+
+    selectedGifts = selectedGifts.filter((gift) => giftOptions.includes(gift.label));
+    renderSelectedGifts();
+    calculateLoan();
+  } catch (error) {
+    console.error("Failed to load gifts from Firebase:", error);
+  }
+}
+
+function getPriceWithColor() {
+  return parseNumber(carPriceInput.value) + parseNumber(specialColorInput.value);
+}
+
+function getNetCarPrice() {
+  return getPriceWithColor() + parseNumber(accessoryInput.value);
 }
 
 function getSelectedModelEntries() {
@@ -265,37 +368,42 @@ function applySelectedSubmodelPrice(options = {}) {
 }
 
 function syncDownPaymentHint() {
-  const adjustedPrice = getAdjustedPrice();
+  const netCarPrice = getNetCarPrice();
   const percentValue = downPaymentPercentSelect.value;
 
   if (percentValue === "custom") {
-    if (adjustedPrice > 0) {
-      const currentPercent = (parseNumber(downPaymentInput.value) / adjustedPrice) * 100;
-      downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber(currentPercent)}% ของราคารถรวม`;
+    if (netCarPrice > 0) {
+      const currentPercent = (parseNumber(downPaymentInput.value) / netCarPrice) * 100;
+      downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber(currentPercent)}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
     } else {
       downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
     }
     return;
   }
 
-  downPaymentPercentHint.textContent = `ระบบจะคำนวณยอดเงินดาวน์จาก ${percentValue}% ของราคารถรวม`;
+  downPaymentPercentHint.textContent = `ระบบจะคำนวณยอดเงินดาวน์จาก ${percentValue}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
 }
 
 function toggleCalculationType() {
   const isBalloon = calculationTypeSelect.value === "balloon";
+  const loanTermMonths = Math.max(parseNumber(loanTermSelect.value), 0);
+  const installmentEndMonth = Math.max(loanTermMonths - 1, 1);
   rvField.classList.toggle("is-hidden", !isBalloon);
   balloonPaymentResult.classList.toggle("is-hidden", !isBalloon);
   monthlyPaymentLabel.textContent = isBalloon
-    ? "ค่างวดต่อเดือน (ไม่รวม RV งวดสุดท้าย)"
+    ? `งวด 1-${installmentEndMonth} (ไม่รวม RV งวดสุดท้าย)`
     : "ค่างวดต่อเดือน (บาท)";
+  if (isBalloon) {
+    balloonPaymentResult.querySelector("span").textContent = `งวด ${Math.max(loanTermMonths, 1)} (ยอด RV งวดสุดท้าย)`;
+  }
 }
 
 function syncDownPaymentWithPercent() {
-  const adjustedPrice = getAdjustedPrice();
+  const netCarPrice = getNetCarPrice();
   const percentValue = downPaymentPercentSelect.value;
 
   if (percentValue !== "custom") {
-    const computedDownPayment = adjustedPrice * (parseNumber(percentValue) / 100);
+    const computedDownPayment = netCarPrice * (parseNumber(percentValue) / 100);
     formatInputValue(downPaymentInput, computedDownPayment);
   }
 
@@ -304,13 +412,13 @@ function syncDownPaymentWithPercent() {
 }
 
 function handleManualDownPaymentChange() {
-  const adjustedPrice = getAdjustedPrice();
+  const netCarPrice = getNetCarPrice();
   const downPayment = parseNumber(downPaymentInput.value);
 
   downPaymentPercentSelect.value = "custom";
 
-  if (adjustedPrice > 0) {
-    downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber((downPayment / adjustedPrice) * 100)}% ของราคารถรวม`;
+  if (netCarPrice > 0) {
+    downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber((downPayment / netCarPrice) * 100)}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
   } else {
     downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
   }
@@ -333,25 +441,133 @@ function calculateStandardPayment(principal, annualRatePercent, loanTermMonths) 
   return principal * monthlyRate * factor / (factor - 1);
 }
 
+function buildGiftOptionMarkup() {
+  giftOptionsContainer.innerHTML = giftOptions.map((label) => {
+    const checked = selectedGifts.some((gift) => gift.label === label) ? "checked" : "";
+    return `
+      <div class="gift-option">
+        <label class="gift-option-select">
+          <input type="checkbox" value="${label}" ${checked}>
+          <span>${label}</span>
+        </label>
+        <button type="button" class="gift-option-remove" data-remove-option="${label}">ลบ</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function addGiftOption() {
+  const label = giftCustomInput.value.trim();
+  if (!label) {
+    return;
+  }
+
+  if (giftOptions.includes(label)) {
+    giftCustomInput.value = "";
+    return;
+  }
+
+  giftOptions.push(label);
+  giftCustomInput.value = "";
+  buildGiftOptionMarkup();
+  saveGiftState();
+}
+
+function removeGiftOption(label) {
+  giftOptions = giftOptions.filter((option) => option !== label);
+  selectedGifts = selectedGifts.filter((gift) => gift.label !== label);
+  buildGiftOptionMarkup();
+  renderSelectedGifts();
+  calculateLoan();
+  saveGiftState();
+}
+
+function openGiftModal() {
+  buildGiftOptionMarkup();
+  giftModal.classList.remove("is-hidden");
+}
+
+function closeGiftModal() {
+  giftModal.classList.add("is-hidden");
+}
+
+function getGiftTotal() {
+  return selectedGifts.reduce((total, gift) => total + parseNumber(gift.value), 0);
+}
+
+function removeGiftByIndex(index) {
+  if (!Number.isInteger(index) || !selectedGifts[index]) {
+    return;
+  }
+
+  selectedGifts.splice(index, 1);
+  renderSelectedGifts();
+  calculateLoan();
+  saveGiftState();
+}
+
+function renderSelectedGifts() {
+  if (selectedGifts.length === 0) {
+    selectedGiftsContainer.className = "gift-list empty-state";
+    selectedGiftsContainer.textContent = "ยังไม่ได้เลือกของแถม";
+    return;
+  }
+
+  selectedGiftsContainer.className = "gift-list";
+  selectedGiftsContainer.innerHTML = selectedGifts.map((gift, index) => `
+    <div class="gift-value-row">
+      <span>${gift.label}</span>
+      <div class="gift-row-actions">
+        <input
+          type="text"
+          inputmode="decimal"
+          data-gift-index="${index}"
+          value="${gift.value}"
+          placeholder="กรอกมูลค่า"
+        >
+        <button type="button" class="gift-remove-button" data-remove-gift-index="${index}">ลบ</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function syncSelectedGiftsFromModal() {
+  const checkedValues = Array.from(
+    giftOptionsContainer.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((input) => input.value);
+
+  selectedGifts = checkedValues.map((label) => {
+    const existingGift = selectedGifts.find((gift) => gift.label === label);
+    return existingGift ?? { label, value: "" };
+  });
+
+  renderSelectedGifts();
+  calculateLoan();
+  closeGiftModal();
+  saveGiftState();
+}
+
 function clearResults() {
   monthlyPaymentDisplay.textContent = "0.00";
   balloonPaymentDisplay.textContent = "0.00";
   loanAmountDisplay.textContent = "0.00";
-  adjustedPriceDisplay.textContent = "0.00";
+  formPriceWithColorDisplay.textContent = "0.00";
+  formNetPriceDisplay.textContent = "0.00";
   totalInterestDisplay.textContent = "0.00";
   totalPaymentDisplay.textContent = "0.00";
   dayDownPaymentDisplay.textContent = "0.00";
   daySupportDisplay.textContent = "0.00";
-  daySupportDiscountDisplay.textContent = "0.00";
+  daySubtotalDisplay.textContent = "0.00";
   vatDisplay.textContent = "0.00";
+  remainingMarginDisplay.textContent = "0.00";
   driveAwayTotalDisplay.textContent = "0.00";
   remainingBalanceDisplay.textContent = "0.00";
 }
 
-function calculateLoan() {
-  const carPrice = parseNumber(carPriceInput.value);
-  const specialColor = parseNumber(specialColorInput.value);
-  const supportDownPayment = parseNumber(supportDownPaymentInput.value);
+function getCalculatorSummary() {
+  const priceWithColor = getPriceWithColor();
+  const netCarPrice = getNetCarPrice();
+  const accessoryAmount = parseNumber(accessoryInput.value);
   const downPayment = parseNumber(downPaymentInput.value);
   const supportDiscount = parseNumber(supportDiscountInput.value);
   const annualRatePercent = parseNumber(interestRateInput.value);
@@ -359,10 +575,9 @@ function calculateLoan() {
   const loanTermYears = loanTermMonths / 12;
   const isBalloon = calculationTypeSelect.value === "balloon";
 
-  const adjustedPrice = carPrice + specialColor + supportDownPayment;
-  const loanAmount = Math.max(adjustedPrice - downPayment, 0);
+  const loanAmount = Math.max(netCarPrice - downPayment, 0);
   const rvPercentage = parseNumber(rvPercentageInput.value);
-  const balloonPayment = isBalloon ? carPrice * (rvPercentage / 100) : 0;
+  const balloonPayment = isBalloon ? netCarPrice * (rvPercentage / 100) : 0;
 
   let monthlyPayment = 0;
   if (isBalloon) {
@@ -378,27 +593,164 @@ function calculateLoan() {
   const totalInterest = Math.max(totalPayment - loanAmount, 0);
 
   const registrationFee = parseNumber(registrationFeeInput.value);
-  const redPlateDeposit = parseNumber(redPlateDepositInput.value);
+  const redPlateDeposit = parseNumber(redPlateDepositDisplay.textContent);
   const financeFee = parseNumber(financeFeeInput.value);
   const bookingDeposit = parseNumber(bookingDepositInput.value);
   const extraTransfer = parseNumber(extraTransferInput.value);
-  const vatAmount = (supportDownPayment + supportDiscount) * 0.03;
-  const driveAwayTotal = (downPayment - supportDownPayment - supportDiscount) + registrationFee + redPlateDeposit + financeFee + vatAmount;
-  const remainingBalance = driveAwayTotal - bookingDeposit + extraTransfer;
+  const margin = parseNumber(marginInput.value);
+  const giftTotal = getGiftTotal();
 
-  monthlyPaymentDisplay.textContent = formatNumber(monthlyPayment);
+  const daySubtotal = downPayment - accessoryAmount - supportDiscount;
+  const vatAmount = (accessoryAmount + supportDiscount) * 0.03;
+  const driveAwayTotal = daySubtotal + registrationFee + redPlateDeposit + financeFee + vatAmount;
+  const remainingBalance = driveAwayTotal - bookingDeposit + extraTransfer;
+  const remainingMargin = margin - giftTotal;
+
+  return {
+    priceWithColor,
+    netCarPrice,
+    accessoryAmount,
+    downPayment,
+    supportDiscount,
+    annualRatePercent,
+    loanTermMonths,
+    isBalloon,
+    loanAmount,
+    rvPercentage,
+    balloonPayment,
+    monthlyPayment,
+    totalPayment,
+    totalInterest,
+    registrationFee,
+    redPlateDeposit,
+    financeFee,
+    bookingDeposit,
+    extraTransfer,
+    margin,
+    giftTotal,
+    daySubtotal,
+    vatAmount,
+    driveAwayTotal,
+    remainingBalance,
+    remainingMargin
+  };
+}
+
+function calculateLoan() {
+  const summary = getCalculatorSummary();
+  const {
+    priceWithColor,
+    netCarPrice,
+    accessoryAmount,
+    downPayment,
+    loanAmount,
+    balloonPayment,
+    monthlyPayment,
+    totalPayment,
+    totalInterest,
+    isBalloon,
+    vatAmount,
+    driveAwayTotal,
+    remainingBalance,
+    remainingMargin,
+    daySubtotal
+  } = summary;
+  const displayedMonthlyPayment = getDisplayedMonthlyPayment(monthlyPayment, isBalloon);
+
+  monthlyPaymentDisplay.textContent = formatNumber(displayedMonthlyPayment);
   balloonPaymentDisplay.textContent = formatNumber(balloonPayment);
   loanAmountDisplay.textContent = formatNumber(loanAmount);
-  adjustedPriceDisplay.textContent = formatNumber(adjustedPrice);
+  formPriceWithColorDisplay.textContent = formatNumber(priceWithColor);
+  formNetPriceDisplay.textContent = formatNumber(netCarPrice);
   totalInterestDisplay.textContent = formatNumber(totalInterest);
   totalPaymentDisplay.textContent = formatNumber(totalPayment);
 
   dayDownPaymentDisplay.textContent = formatNumber(downPayment);
-  daySupportDisplay.textContent = formatNumber(supportDownPayment);
-  daySupportDiscountDisplay.textContent = formatNumber(supportDiscount);
+  daySupportDisplay.textContent = formatNumber(accessoryAmount);
+  daySubtotalDisplay.textContent = formatNumber(daySubtotal);
   vatDisplay.textContent = formatNumber(vatAmount);
   driveAwayTotalDisplay.textContent = formatNumber(driveAwayTotal);
   remainingBalanceDisplay.textContent = formatNumber(remainingBalance);
+  remainingMarginDisplay.textContent = formatNumber(remainingMargin);
+}
+
+function buildSummaryText() {
+  const summary = getCalculatorSummary();
+  const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
+  const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
+  const headline = modelText || "รุ่นรถที่เลือก";
+  const carPrice = parseNumber(carPriceInput.value);
+  const specialColor = parseNumber(specialColorInput.value);
+  const downPaymentPercent = downPaymentPercentSelect.value === "custom"
+    ? (summary.netCarPrice > 0 ? (summary.downPayment / summary.netCarPrice) * 100 : 0)
+    : parseNumber(downPaymentPercentSelect.value);
+  const netPrice = summary.netCarPrice;
+  const loanYears = summary.loanTermMonths / 12;
+  const giftsText = selectedGifts.length > 0
+    ? selectedGifts.map((gift) => gift.label).join("\n")
+    : "- ยังไม่ได้เลือกของแถม";
+
+  const installmentLines = summary.isBalloon
+    ? [
+        `งวดที่ 1-${Math.max(summary.loanTermMonths - 1, 1)} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(getDisplayedMonthlyPayment(summary.monthlyPayment, true))} บาท`,
+        `งวดที่ ${summary.loanTermMonths} (RV${formatPercent(summary.rvPercentage)}%) = ${formatSummaryNumber(summary.balloonPayment)} บาท`,
+        `( งวดที่ ${summary.loanTermMonths} ลูกค้าสามารถปิดยอดได้ หรือ สามารถผ่อนต่อได้อีก 2ปี คำนวณดอกเบี้ยจากไฟแนนซ์ )`
+      ]
+    : [
+        `งวดที่ 1-${summary.loanTermMonths} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(summary.monthlyPayment)} บาท`
+      ];
+
+  return [
+    `🚗 ${headline} 💨`,
+    `(🌼 ${campaignLabel} 🌼)`,
+    `ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
+    `บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`,
+    `             = ${formatSummaryNumber(summary.priceWithColor)} บาท`,
+    `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`,
+    `ราคาสุทธิ ${formatSummaryNumber(netPrice)} บาท`,
+    `ดาวน์${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
+    `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
+    `ผ่อน ${formatPercent(loanYears)}ปี`,
+    ...installmentLines,
+    "",
+    "🌼✨ ของแถม ✨🌼",
+    giftsText,
+    "",
+    "✨🎀 ค่าใช้จ่ายวันรับรถ 🎀✨",
+    `1.เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
+    `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`,
+    `ส่วนลดช่วยดาวน์ ${formatSummaryNumber(summary.supportDiscount)} บาท`,
+    `                      = ${formatSummaryNumber(summary.daySubtotal)} บาท`,
+    `2.ค่าจดทะเบียน = ${formatSummaryNumber(summary.registrationFee)}`,
+    `3.ค่ามัดจำป้ายแดง = ${formatSummaryNumber(summary.redPlateDeposit)} (ได้คืน)`,
+    `4.ค่าธรรมเนียมไฟแนนซ์ = ${formatSummaryNumber(summary.financeFee)} บาท`,
+    `5.VAT 3% (${formatSummaryNumber(summary.accessoryAmount + summary.supportDiscount)}) = ${formatSummaryNumber(summary.vatAmount)} บาท`,
+    `รวมค่าใช้จ่ายออกรถ = ${formatSummaryNumber(summary.driveAwayTotal)} บาท`,
+    `หักเงินจอง       = ${formatSummaryNumber(summary.bookingDeposit)} บาท`,
+    `*ผ่านไฟแนนซ์ลูกค้าโอนเพิ่ม ${formatSummaryNumber(summary.extraTransfer)}`,
+    `เหลือยอดชำระ = ${formatSummaryNumber(summary.remainingBalance)} บาท`
+  ].join("\n");
+}
+
+async function copySummaryText() {
+  const summaryText = buildSummaryText();
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(summaryText);
+    } else {
+      const helper = document.createElement("textarea");
+      helper.value = summaryText;
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+    }
+
+    setMessage("คัดลอกข้อความสรุปแล้ว");
+  } catch (error) {
+    setMessage("ไม่สามารถคัดลอกข้อความสรุปได้");
+  }
 }
 
 function resetFormState() {
@@ -410,17 +762,17 @@ function resetFormState() {
 
   carPriceInput.value = "";
   specialColorInput.value = "";
-  supportDownPaymentInput.value = "";
+  accessoryInput.value = "";
   downPaymentInput.value = "";
   supportDiscountInput.value = "";
   interestRateInput.value = "";
   rvPercentageInput.value = "";
-
   registrationFeeInput.value = "";
-  redPlateDepositInput.value = "";
+  redPlateDepositDisplay.textContent = formatNumber(3500);
   financeFeeInput.value = "";
   bookingDepositInput.value = "";
   extraTransferInput.value = "";
+  marginInput.value = "0";
 
   calculationTypeSelect.value = "balloon";
   downPaymentPercentSelect.value = "15";
@@ -491,9 +843,16 @@ function handleFormattedNumericInput(event) {
 
 function initializeCalculator() {
   populateCarModels();
+  renderSelectedGifts();
   toggleCalculationType();
   syncDownPaymentHint();
   calculateLoan();
+
+  loadGiftStateFromFirebase();
+
+  window.addEventListener("firebase-gift-store-ready", () => {
+    loadGiftStateFromFirebase();
+  }, { once: true });
 }
 
 calculationTypeSelect.addEventListener("change", () => {
@@ -512,22 +871,22 @@ downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
 [
   carPriceInput,
   specialColorInput,
-  supportDownPaymentInput,
+  accessoryInput,
   supportDiscountInput,
   interestRateInput,
   rvPercentageInput,
   registrationFeeInput,
-  redPlateDepositInput,
   financeFeeInput,
   bookingDepositInput,
-  extraTransferInput
+  extraTransferInput,
+  marginInput
 ].forEach((input) => {
   input.addEventListener("input", () => {
     if (input === carPriceInput) {
       setMessage("");
     }
 
-    if (downPaymentPercentSelect.value !== "custom" && input !== supportDiscountInput && input !== interestRateInput && input !== rvPercentageInput && input !== registrationFeeInput && input !== redPlateDepositInput && input !== financeFeeInput && input !== bookingDepositInput && input !== extraTransferInput) {
+    if (downPaymentPercentSelect.value !== "custom" && [carPriceInput, specialColorInput, accessoryInput].includes(input)) {
       syncDownPaymentWithPercent();
       return;
     }
@@ -538,10 +897,92 @@ downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
   input.addEventListener("blur", handleFormattedNumericInput);
 });
 
+selectedGiftsContainer.addEventListener("input", (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const index = Number(input.dataset.giftIndex);
+  if (!Number.isInteger(index) || !selectedGifts[index]) {
+    return;
+  }
+
+  selectedGifts[index].value = input.value;
+  calculateLoan();
+  saveGiftState();
+});
+
+selectedGiftsContainer.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const button = target.closest("[data-remove-gift-index]");
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  removeGiftByIndex(Number(button.dataset.removeGiftIndex));
+});
+
+selectedGiftsContainer.addEventListener("blur", (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const index = Number(input.dataset.giftIndex);
+  if (!Number.isInteger(index) || !selectedGifts[index]) {
+    return;
+  }
+
+  handleFormattedNumericInput(event);
+  selectedGifts[index].value = input.value;
+  calculateLoan();
+  saveGiftState();
+}, true);
+
+giftOptionsContainer.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const removeButton = target.closest("[data-remove-option]");
+  if (!(removeButton instanceof HTMLElement)) {
+    return;
+  }
+
+  removeGiftOption(removeButton.dataset.removeOption ?? "");
+});
+
 loanTermSelect.addEventListener("change", calculateLoan);
+loanTermSelect.addEventListener("change", toggleCalculationType);
+addGiftButton.addEventListener("click", openGiftModal);
+giftModalCloseButton.addEventListener("click", closeGiftModal);
+giftModalCancelButton.addEventListener("click", closeGiftModal);
+giftModalConfirmButton.addEventListener("click", syncSelectedGiftsFromModal);
+giftCustomAddButton.addEventListener("click", addGiftOption);
+giftCustomInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addGiftOption();
+  }
+});
+giftModal.addEventListener("click", (event) => {
+  if (event.target === giftModal) {
+    closeGiftModal();
+  }
+});
 
 resetButton.addEventListener("click", () => {
   resetFormState();
+});
+
+copySummaryButton.addEventListener("click", () => {
+  copySummaryText();
 });
 
 initializeCalculator();

@@ -77,9 +77,13 @@ h1 {
   padding: 28px;
 }
 
+.summary-actions-card {
+  padding: 20px 28px;
+}
+
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -96,7 +100,120 @@ label {
   font-size: 0.92rem;
 }
 
+.form-span-full {
+  grid-column: 1 / -1;
+}
+
+.form-span-half {
+  grid-column: span 3;
+}
+
+.form-span-third {
+  grid-column: span 2;
+}
+
 label span {
+  font-size: 0.95rem;
+}
+
+.inline-summary-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  font-weight: 600;
+}
+
+.inline-summary-card span {
+  font-size: 0.95rem;
+}
+
+.inline-summary-card strong {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 42, 48, 0.12);
+  border-radius: 14px;
+  background: var(--card-strong);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.inline-summary-accent span {
+  color: #0f766e;
+}
+
+.inline-summary-accent strong {
+  border-color: rgba(15, 118, 110, 0.18);
+  background: rgba(215, 242, 239, 0.82);
+  color: #0f766e;
+}
+
+.inline-display-card,
+.inline-input-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  font-weight: 600;
+}
+
+.inline-display-card span,
+.inline-input-card span {
+  font-size: 0.95rem;
+}
+
+.inline-display-card strong {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 42, 48, 0.12);
+  border-radius: 14px;
+  background: var(--card-strong);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.inline-input-card input {
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 42, 48, 0.12);
+  border-radius: 14px;
+  background: var(--card-strong);
+  color: var(--text);
+  font: inherit;
+}
+
+.day-costs-top-card strong {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.day-costs-bottom-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.day-costs-bottom-card span {
+  font-size: 0.95rem;
+}
+
+.day-costs-support-card,
+.day-costs-total-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.day-costs-support-card span,
+.day-costs-total-card span {
   font-size: 0.95rem;
 }
 
@@ -126,6 +243,25 @@ select:focus {
   display: block;
 }
 
+.form-results {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-results .hero-result {
+  grid-column: auto;
+}
+
+.summary-actions {
+  display: block;
+}
+
+.summary-actions button {
+  width: 100%;
+}
+
 button {
   padding: 15px 18px;
   border: 0;
@@ -152,6 +288,19 @@ button:hover {
 
 .secondary-button:hover {
   box-shadow: 0 10px 20px rgba(185, 28, 28, 0.2);
+}
+
+.ghost-button {
+  width: auto;
+  padding: 10px 14px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.ghost-button:hover {
+  box-shadow: none;
 }
 
 .results {
@@ -189,6 +338,27 @@ button:hover {
 
 .day-costs-grid {
   margin-top: 0;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.day-costs-inline-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.day-costs-inline-grid > .day-costs-top-card,
+.day-costs-inline-grid > .day-costs-bottom-card {
+  grid-column: span 6;
+}
+
+.day-costs-inline-grid > .day-costs-support-card,
+.day-costs-inline-grid > .day-costs-total-card {
+  grid-column: 1 / -1;
+}
+
+.gift-margin-grid {
+  margin-top: 0;
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
@@ -220,6 +390,59 @@ button:hover {
   grid-column: span 6;
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(15, 118, 110, 0.14);
+}
+
+.finance-inline-total {
+  grid-column: span 6;
+}
+
+.finance-half-card {
+  grid-column: span 6;
+}
+
+.gift-card {
+  grid-column: 1 / -1;
+}
+
+.day-costs-section {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(31, 42, 48, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.final-section {
+  background:
+    linear-gradient(145deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.96));
+  border-color: rgba(15, 118, 110, 0.18);
+}
+
+.day-costs-section-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.day-costs-section-header h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  color: var(--text);
+}
+
+.day-costs-section-header span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.day-costs-section-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .result-item span {
@@ -258,11 +481,207 @@ button:hover {
   border-color: rgba(15, 118, 110, 0.16);
 }
 
+.day-costs .result-item {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.day-costs .result-item.highlight {
+  background: var(--accent-soft);
+  border-color: rgba(15, 118, 110, 0.16);
+}
+
+.day-costs .editable-result {
+  padding-bottom: 16px;
+}
+
+.day-costs .editable-result span,
+.day-costs .result-item span {
+  font-size: 0.9rem;
+}
+
+.day-costs .editable-result input {
+  min-height: 48px;
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  background: #ffffff;
+}
+
+.emphasis-total {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(15, 118, 110, 0.18);
+}
+
+.full-width-total {
+  grid-column: span 12;
+}
+
+.margin-card {
+  grid-column: span 6;
+}
+
+.vat-full-card {
+  grid-column: 1 / -1;
+}
+
+.settlement-card {
+  grid-column: span 6;
+}
+
+.final-balance-card {
+  grid-column: 1 / -1;
+  min-height: 100%;
+  align-content: center;
+}
+
 .message {
   min-height: 24px;
   margin: 16px 4px 0;
   color: #a16207;
   font-weight: 600;
+}
+
+.gift-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.gift-list {
+  display: grid;
+  gap: 12px;
+}
+
+.gift-value-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 12px;
+  align-items: center;
+}
+
+.gift-value-row span {
+  color: var(--text);
+}
+
+.gift-row-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 10px;
+  align-items: center;
+}
+
+.gift-remove-button {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #991b1b, #dc2626);
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 10px 0 4px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(31, 42, 48, 0.4);
+}
+
+.modal.is-hidden {
+  display: none;
+}
+
+.modal-panel {
+  width: min(680px, 100%);
+  max-height: min(85vh, 760px);
+  overflow: auto;
+  padding: 24px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 48px rgba(31, 42, 48, 0.22);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(31, 42, 48, 0.08);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.icon-button:hover {
+  box-shadow: none;
+}
+
+.gift-options {
+  display: grid;
+  gap: 10px;
+}
+
+.gift-custom-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gift-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(31, 42, 48, 0.08);
+  background: rgba(242, 234, 223, 0.32);
+}
+
+.gift-option-select {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.gift-option input {
+  margin-top: 3px;
+}
+
+.gift-option-remove {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #991b1b, #dc2626);
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  width: 100%;
 }
 
 @media (max-width: 720px) {
@@ -282,19 +701,72 @@ button:hover {
     align-items: start;
   }
 
+  .day-costs-section-header {
+    flex-direction: column;
+    align-items: start;
+  }
+
   .form-grid,
   .results {
     grid-template-columns: 1fr;
   }
 
+  .form-results {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-half,
+  .form-span-third {
+    grid-column: auto;
+  }
+
+  .summary-actions {
+    display: block;
+  }
+
+  .summary-actions button {
+    width: 100%;
+  }
+
   .finance-results,
-  .day-costs-grid {
+  .gift-margin-grid,
+  .day-costs-section-grid {
     grid-template-columns: 1fr;
   }
 
   .hero-result,
   .compact-result,
-  .summary-total {
+  .summary-total,
+  .inline-display-card,
+  .inline-input-card,
+  .emphasis-total,
+  .full-width-total,
+  .final-balance-card {
     grid-column: auto;
+  }
+
+  .gift-card {
+    grid-column: auto;
+  }
+
+  .gift-card-header,
+  .modal-actions,
+  .gift-value-row,
+  .gift-custom-form,
+  .gift-option {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .gift-row-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .gift-value-row input,
+  .gift-remove-button,
+  .gift-option-remove,
+  .gift-card-header .ghost-button,
+  .modal-actions button {
+    width: 100%;
   }
 }
