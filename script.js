@@ -275,6 +275,16 @@ function formatPercent(value) {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "");
 }
 
+function formatInterestRateInput(input, value) {
+  if (value === "" || value === "0") {
+    input.value = "";
+    return;
+  }
+  
+  const num = parseNumber(value);
+  input.value = num.toFixed(2);
+}
+
 function setMessage(text = "") {
   message.textContent = text;
 }
@@ -945,7 +955,6 @@ downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
   specialColorInput,
   accessoryInput,
   supportDiscountInput,
-  interestRateInput,
   rvPercentageInput,
   registrationFeeInput,
   financeFeeInput,
@@ -967,6 +976,15 @@ downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
   });
 
   input.addEventListener("blur", handleFormattedNumericInput);
+});
+
+interestRateInput.addEventListener("input", () => {
+  calculateLoan();
+});
+
+interestRateInput.addEventListener("blur", (event) => {
+  formatInterestRateInput(interestRateInput, interestRateInput.value);
+  calculateLoan();
 });
 
 selectedGiftsContainer.addEventListener("input", (event) => {
