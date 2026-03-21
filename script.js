@@ -649,7 +649,7 @@ function getCalculatorSummary() {
 
   const loanAmount = Math.max(netCarPrice - downPayment, 0);
   const rvPercentage = parseNumber(rvPercentageInput.value);
-  const balloonPayment = isBalloon ? car-price * (rvPercentage / 100) : 0;
+  const balloonPayment = isBalloon ? carPriceInput * (rvPercentage / 100) : 0;
 
   let monthlyPayment = 0;
   if (isBalloon) {
