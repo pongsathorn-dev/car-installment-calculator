@@ -639,6 +639,7 @@ function clearResults() {
 function getCalculatorSummary() {
   const priceWithColor = getPriceWithColor();
   const netCarPrice = getNetCarPrice();
+  const carPrice = parseNumber(carPriceInput.value);
   const accessoryAmount = parseNumber(accessoryInput.value);
   const downPayment = parseNumber(downPaymentInput.value);
   const supportDiscount = parseNumber(supportDiscountInput.value);
@@ -649,7 +650,7 @@ function getCalculatorSummary() {
 
   const loanAmount = Math.max(netCarPrice - downPayment, 0);
   const rvPercentage = parseNumber(rvPercentageInput.value);
-  const balloonPayment = isBalloon ? carPriceInput * (rvPercentage / 100) : 0;
+  const balloonPayment = isBalloon ? carPrice * (rvPercentage / 100) : 0;
 
   let monthlyPayment = 0;
   if (isBalloon) {
