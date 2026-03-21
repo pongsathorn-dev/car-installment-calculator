@@ -16,6 +16,26 @@
 
     <section class="card calculator">
       <form id="loan-form" class="form-grid" autocomplete="off">
+        <label class="form-span-third">
+          <span>ชื่อลูกค้า</span>
+          <input id="customer-name" name="customer-name" type="text" placeholder="ระบุชื่อลูกค้า">
+        </label>
+
+        <label class="form-span-third">
+          <span>เบอร์โทร</span>
+          <input id="customer-phone" name="customer-phone" type="text" inputmode="tel" placeholder="ระบุเบอร์โทร">
+        </label>
+
+        <label class="form-span-third">
+          <span>ช่องทาง</span>
+          <input id="customer-channel" name="customer-channel" type="text" placeholder="เช่น Facebook / Line / โทรเข้า">
+        </label>
+
+        <label class="form-span-full">
+          <span>ฤกษ์ออกรถ</span>
+          <input id="delivery-date" name="delivery-date" type="text" placeholder="ระบุวันหรือฤกษ์ออกรถ">
+        </label>
+
         <label class="form-span-full">
           <span>วิธีคำนวณ</span>
           <select id="calculation-type" name="calculation-type">

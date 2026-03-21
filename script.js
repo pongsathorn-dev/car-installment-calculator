@@ -150,6 +150,10 @@ const TOYOTA_MODEL_DATA = {
 };
 
 const form = document.getElementById("loan-form");
+const customerNameInput = document.getElementById("customer-name");
+const customerPhoneInput = document.getElementById("customer-phone");
+const customerChannelInput = document.getElementById("customer-channel");
+const deliveryDateInput = document.getElementById("delivery-date");
 const calculationTypeSelect = document.getElementById("calculation-type");
 const carModelInput = document.getElementById("car-model");
 const carModelOptions = document.getElementById("car-model-options");
@@ -749,6 +753,10 @@ function calculateLoan() {
 
 function buildSummaryText() {
   const summary = getCalculatorSummary();
+  const customerName = customerNameInput.value.trim() || "-";
+  const customerPhone = customerPhoneInput.value.trim() || "-";
+  const customerChannel = customerChannelInput.value.trim() || "-";
+  const deliveryDate = deliveryDateInput.value.trim() || "-";
   const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
   const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
   const headline = modelText || "รุ่นรถที่เลือก";
@@ -774,6 +782,11 @@ function buildSummaryText() {
       ];
 
   return [
+    `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨`,
+    `📞 โทร: ${customerPhone}`,
+    `📍ช่องทาง: ${customerChannel}`,
+    `📆ฤกษ์ออกรถ: ${deliveryDate}`,
+    "",
     `🚗 ${headline} 💨`,
     `(🌼 ${campaignLabel} 🌼)`,
     `ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
@@ -837,6 +850,10 @@ function resetFormState() {
   carModelInput.value = "";
   carSubmodelInput.value = "";
   carSubmodelOptions.innerHTML = "";
+  customerNameInput.value = "";
+  customerPhoneInput.value = "";
+  customerChannelInput.value = "";
+  deliveryDateInput.value = "";
 
   carPriceInput.value = "";
   specialColorInput.value = "";
