@@ -289,6 +289,21 @@ function formatInterestRateInput(input, value) {
   input.value = num.toFixed(2);
 }
 
+function isBalloonCalculationSelected() {
+  return calculationTypeSelect.value === "balloon";
+}
+
+function setBalloonVisibility(isBalloon) {
+  rvField.classList.toggle("is-hidden", !isBalloon);
+  balloonPaymentResult.classList.toggle("is-hidden", !isBalloon);
+  rvField.hidden = !isBalloon;
+  balloonPaymentResult.hidden = !isBalloon;
+  rvField.style.display = isBalloon ? "" : "none";
+  balloonPaymentResult.style.display = isBalloon ? "" : "none";
+  rvField.setAttribute("aria-hidden", String(!isBalloon));
+  balloonPaymentResult.setAttribute("aria-hidden", String(!isBalloon));
+}
+
 function setMessage(text = "") {
   message.textContent = text;
 }
@@ -399,11 +414,11 @@ function syncDownPaymentHint() {
 }
 
 function toggleCalculationType() {
-  const isBalloon = calculationTypeSelect.value === "balloon";
+  const isBalloon = isBalloonCalculationSelected();
   const loanTermMonths = Math.max(parseNumber(loanTermSelect.value), 0);
   const installmentEndMonth = Math.max(loanTermMonths - 1, 1);
-  rvField.classList.toggle("is-hidden", !isBalloon);
-  balloonPaymentResult.classList.toggle("is-hidden", !isBalloon);
+
+  setBalloonVisibility(isBalloon);
   monthlyPaymentLabel.textContent = isBalloon
     ? `งวด 1-${installmentEndMonth} (ไม่รวม RV งวดสุดท้าย)`
     : "ค่างวดต่อเดือน (บาท)";
@@ -445,14 +460,8 @@ function calculateStandardPayment(principal, annualRatePercent, loanTermMonths) 
     return 0;
   }
 
-  const monthlyRate = annualRatePercent / 100 / 12;
-
-  if (monthlyRate <= 0) {
-    return principal / loanTermMonths;
-  }
-
-  const factor = Math.pow(1 + monthlyRate, loanTermMonths);
-  return principal * monthlyRate * factor / (factor - 1);
+  const loanTermYears = loanTermMonths / 12;
+  return ((principal * loanTermYears * (annualRatePercent / 100)) + principal) / loanTermMonths;
 }
 
 function buildGiftOptionMarkup() {
@@ -645,14 +654,14 @@ function getCalculatorSummary() {
   const netCarPrice = getNetCarPrice();
   const carPrice = parseNumber(carPriceInput.value);
   const accessoryAmount = parseNumber(accessoryInput.value);
-  const downPayment = parseNumber(downPaymentInput.value);
+  const downPayment = parseNumber(downPaymentInput.value); //เงินดาวน์
   const supportDiscount = parseNumber(supportDiscountInput.value);
   const annualRatePercent = parseNumber(interestRateInput.value);
-  const loanTermMonths = parseNumber(loanTermSelect.value);
-  const loanTermYears = loanTermMonths / 12;
-  const isBalloon = calculationTypeSelect.value === "balloon";
+  const loanTermMonths = parseNumber(loanTermSelect.value);   //ระยะเวลาผ่อนชำระเป็นเดือน
+  const loanTermYears = loanTermMonths / 12;    //ระยะเวลาผ่อนชำระเป็นปี
+  const isBalloon = isBalloonCalculationSelected();
 
-  const loanAmount = Math.max(netCarPrice - downPayment, 0);
+  const loanAmount = Math.max(netCarPrice - downPayment, 0);  //ยอดจัดไฟแนนซ์
   const rvPercentage = parseNumber(rvPercentageInput.value);
   const balloonPayment = isBalloon ? carPrice * (rvPercentage / 100) : 0;
 
@@ -664,10 +673,14 @@ function getCalculatorSummary() {
     monthlyPayment = calculateStandardPayment(loanAmount, annualRatePercent, loanTermMonths);
   }
 
+  /*const totalPayment = isBalloon
+    ? (monthlyPayment * Math.max(loanTermMonths - 1, 0)) + balloonPayment
+    : monthlyPayment * loanTermMonths;*/
+
+  const totalInterest = Math.max(loanAmount * loanTermYears * (annualRatePercent / 100), 0);
   const totalPayment = isBalloon
     ? (monthlyPayment * Math.max(loanTermMonths - 1, 0)) + balloonPayment
-    : monthlyPayment * loanTermMonths;
-  const totalInterest = Math.max(totalPayment - loanAmount, 0);
+    : netCarPrice + totalInterest;
 
   const registrationFee = parseNumber(registrationFeeInput.value);
   const redPlateDeposit = parseNumber(redPlateDepositDisplay.textContent);
@@ -734,6 +747,7 @@ function calculateLoan() {
   } = summary;
   const displayedMonthlyPayment = getDisplayedMonthlyPayment(monthlyPayment, isBalloon);
 
+  setBalloonVisibility(isBalloon);
   monthlyPaymentDisplay.textContent = formatNumber(displayedMonthlyPayment);
   balloonPaymentDisplay.textContent = formatNumber(balloonPayment);
   loanAmountDisplay.textContent = formatNumber(loanAmount);
