@@ -72,12 +72,15 @@
         </div>
 
         <label class="form-span-half">
-          <span>บวกอุปกรณ์</span>
+          <span class="field-label-with-action">
+            <span id="accessory-field-label">บวกอุปกรณ์</span>
+            <button type="button" id="accessory-mode-toggle" class="chip-toggle">สลับเป็นส่วนลด</button>
+          </span>
           <input id="support-down-payment" name="support-down-payment" type="text" inputmode="decimal" value="">
         </label>
 
         <div class="inline-summary-card inline-summary-accent form-span-half">
-          <span>ราคารถ + บวกสีพิเศษ + บวกอุปกรณ์</span>
+          <span id="form-net-price-label">ราคารถ + บวกสีพิเศษ + บวกอุปกรณ์</span>
           <strong id="form-net-price-display">0.00</strong>
         </div>
 
@@ -208,20 +211,20 @@
         </div>
         <div class="results day-costs-grid">
           <div class="day-costs-section-grid day-costs-inline-grid">
-            <div class="result-item summary-total emphasis-total day-costs-top-card">
+            <div id="day-down-payment-card" class="result-item summary-total emphasis-total day-costs-top-card">
               <span>เงินดาวน์</span>
               <strong id="day-down-payment-display">0.00</strong>
             </div>
-            <div class="result-item summary-total emphasis-total day-costs-top-card">
-              <span>บวกอุปกรณ์</span>
+            <div id="day-support-card" class="result-item summary-total emphasis-total day-costs-top-card">
+              <span id="day-support-label">บวกอุปกรณ์</span>
               <strong id="day-support-display">0.00</strong>
             </div>
-            <label class="inline-input-card day-costs-support-card">
+            <label id="day-support-discount-card" class="inline-input-card day-costs-support-card">
               <span>ส่วนลดช่วยดาวน์</span>
               <input id="support-discount" name="support-discount" type="text" inputmode="decimal" value="">
             </label>
-            <div class="result-item summary-total emphasis-total highlight day-costs-total-card">
-              <span>รวม (เงินดาวน์ - บวกอุปกรณ์ - ส่วนลดช่วยดาวน์)</span>
+            <div id="day-subtotal-card" class="result-item summary-total emphasis-total highlight day-costs-total-card">
+              <span id="day-subtotal-label">รวม (เงินดาวน์ - บวกอุปกรณ์ - ส่วนลดช่วยดาวน์)</span>
               <strong id="day-subtotal-display">0.00</strong>
             </div>
           </div>
@@ -236,11 +239,11 @@
               <input id="finance-fee-input" type="text" inputmode="decimal" value="">
             </label>
 
-            <div class="result-item compact-result vat-full-card">
+            <div id="vat-card" class="result-item compact-result vat-full-card">
               <span>VAT 3% (บวกอุปกรณ์ + ส่วนลดช่วยดาวน์)</span>
               <strong id="vat-display">0.00</strong>
             </div>
-            <div class="result-item compact-result vat-pair-card">
+            <div id="red-plate-card" class="result-item compact-result vat-pair-card">
               <span>ค่ามัดจำป้ายแดง (ได้คืน)</span>
               <strong id="red-plate-deposit-input">3,500.00</strong>
             </div>
