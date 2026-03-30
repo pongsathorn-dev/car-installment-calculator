@@ -1,4 +1,4 @@
-const TOYOTA_MODEL_DATA = {
+﻿const TOYOTA_MODEL_DATA = {
   "Yaris": [
     { name: "Sport", price: 584000 },
     { name: "Smart", price: 644000 },
@@ -457,22 +457,6 @@ function applySelectedSubmodelPrice(options = {}) {
   return true;
 }
 
-function syncDownPaymentHint() {
-  const netCarPrice = getNetCarPrice();
-  const percentValue = downPaymentPercentSelect.value;
-
-  if (percentValue === "custom") {
-    if (netCarPrice > 0) {
-      const currentPercent = (parseNumber(downPaymentInput.value) / netCarPrice) * 100;
-      downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber(currentPercent)}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
-    } else {
-      downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
-    }
-    return;
-  }
-
-  downPaymentPercentHint.textContent = `ระบบจะคำนวณยอดเงินดาวน์จาก ${percentValue}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
-}
 
 function toggleCalculationType() {
   const isBalloon = isBalloonCalculationSelected();
@@ -501,20 +485,6 @@ function syncDownPaymentWithPercent() {
   calculateLoan();
 }
 
-function handleManualDownPaymentChange() {
-  const netCarPrice = getNetCarPrice();
-  const downPayment = parseNumber(downPaymentInput.value);
-
-  downPaymentPercentSelect.value = "custom";
-
-  if (netCarPrice > 0) {
-    downPaymentPercentHint.textContent = `กำหนดเงินดาวน์เอง คิดเป็นประมาณ ${formatNumber((downPayment / netCarPrice) * 100)}% ของราคารถรวมสีพิเศษและบวกอุปกรณ์`;
-  } else {
-    downPaymentPercentHint.textContent = "กำหนดเงินดาวน์เอง";
-  }
-
-  calculateLoan();
-}
 
 function calculateStandardPayment(principal, annualRatePercent, loanTermMonths) {
   if (principal <= 0 || loanTermMonths <= 0) {
@@ -710,267 +680,8 @@ function clearResults() {
   remainingBalanceDisplay.textContent = "0.00";
 }
 
-function getCalculatorSummary() {
-  const priceWithColor = getPriceWithColor();
-  const netCarPrice = getNetCarPrice();
-  const carPrice = parseNumber(carPriceInput.value);
-  const accessoryAmount = parseNumber(accessoryInput.value);
-  const downPayment = parseNumber(downPaymentInput.value); //เงินดาวน์
-  const supportDiscount = parseNumber(supportDiscountInput.value);
-  const annualRatePercent = parseNumber(interestRateInput.value);
-  const loanTermMonths = parseNumber(loanTermSelect.value);   //ระยะเวลาผ่อนชำระเป็นเดือน
-  const loanTermYears = loanTermMonths / 12;    //ระยะเวลาผ่อนชำระเป็นปี
-  const isBalloon = isBalloonCalculationSelected();
 
-  const loanAmount = Math.max(netCarPrice - downPayment, 0);  //ยอดจัดไฟแนนซ์
-  const rvPercentage = parseNumber(rvPercentageInput.value);
-  const balloonPayment = isBalloon ? carPrice * (rvPercentage / 100) : 0;
 
-  let monthlyPayment = 0;
-  if (isBalloon) {
-    const monthlyInstallments = Math.max(loanTermMonths - 1, 1);
-    monthlyPayment = ((loanAmount * (annualRatePercent / 100) * loanTermYears) + loanAmount - balloonPayment) / monthlyInstallments;
-  } else {
-    monthlyPayment = calculateStandardPayment(loanAmount, annualRatePercent, loanTermMonths);
-  }
-
-  /*const totalPayment = isBalloon
-    ? (monthlyPayment * Math.max(loanTermMonths - 1, 0)) + balloonPayment
-    : monthlyPayment * loanTermMonths;*/
-
-  const totalInterest = Math.max(loanAmount * loanTermYears * (annualRatePercent / 100), 0);
-  const totalPayment = isBalloon
-    ? (monthlyPayment * Math.max(loanTermMonths - 1, 0)) + balloonPayment
-    : netCarPrice + totalInterest;
-
-  const registrationFee = parseNumber(registrationFeeInput.value);
-  const redPlateDeposit = parseNumber(redPlateDepositDisplay.textContent);
-  const financeFee = parseNumber(financeFeeInput.value);
-  const bookingDeposit = parseNumber(bookingDepositInput.value);
-  const extraTransfer = parseNumber(extraTransferInput.value);
-  const margin = parseNumber(marginInput.value);
-  const giftTotal = getGiftTotal();
-
-  const daySubtotal = downPayment - accessoryAmount - supportDiscount;
-  const vatAmount = (accessoryAmount + supportDiscount) * 0.03;
-  const driveAwayTotal = daySubtotal + registrationFee + redPlateDeposit + financeFee + vatAmount;
-  const remainingBalance = driveAwayTotal - bookingDeposit + extraTransfer;
-  const remainingMargin = margin - giftTotal;
-
-  return {
-    priceWithColor,
-    netCarPrice,
-    accessoryAmount,
-    downPayment,
-    supportDiscount,
-    annualRatePercent,
-    loanTermMonths,
-    isBalloon,
-    loanAmount,
-    rvPercentage,
-    balloonPayment,
-    monthlyPayment,
-    totalPayment,
-    totalInterest,
-    registrationFee,
-    redPlateDeposit,
-    financeFee,
-    bookingDeposit,
-    extraTransfer,
-    margin,
-    giftTotal,
-    daySubtotal,
-    vatAmount,
-    driveAwayTotal,
-    remainingBalance,
-    remainingMargin
-  };
-}
-
-function calculateLoan() {
-  const summary = getCalculatorSummary();
-  const {
-    priceWithColor,
-    netCarPrice,
-    accessoryAmount,
-    downPayment,
-    loanAmount,
-    balloonPayment,
-    monthlyPayment,
-    totalPayment,
-    totalInterest,
-    isBalloon,
-    vatAmount,
-    driveAwayTotal,
-    remainingBalance,
-    remainingMargin,
-    daySubtotal
-  } = summary;
-  const displayedMonthlyPayment = getDisplayedMonthlyPayment(monthlyPayment, isBalloon);
-
-  setBalloonVisibility(isBalloon);
-  monthlyPaymentDisplay.textContent = formatNumber(displayedMonthlyPayment);
-  balloonPaymentDisplay.textContent = formatNumber(balloonPayment);
-  loanAmountDisplay.textContent = formatNumber(loanAmount);
-  formPriceWithColorDisplay.textContent = formatNumber(priceWithColor);
-  formNetPriceDisplay.textContent = formatNumber(netCarPrice);
-  totalInterestDisplay.textContent = formatNumber(totalInterest);
-  totalPaymentDisplay.textContent = formatNumber(totalPayment);
-
-  dayDownPaymentDisplay.textContent = formatNumber(downPayment);
-  daySupportDisplay.textContent = formatNumber(accessoryAmount);
-  daySubtotalDisplay.textContent = formatNumber(daySubtotal);
-  vatDisplay.textContent = formatNumber(vatAmount);
-  driveAwayTotalDisplay.textContent = formatNumber(driveAwayTotal);
-  remainingBalanceDisplay.textContent = formatNumber(remainingBalance);
-  remainingMarginDisplay.textContent = formatNumber(remainingMargin);
-}
-
-function buildSummaryText() {
-  const summary = getCalculatorSummary();
-  const customerName = customerNameInput.value.trim() || "-";
-  const customerPhone = customerPhoneInput.value.trim() || "-";
-  const customerChannel = customerChannelInput.value.trim() || "-";
-  const deliveryDate = deliveryDateInput.value.trim() || "-";
-  const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
-  const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
-  const headline = modelText || "รุ่นรถที่เลือก";
-  const carPrice = parseNumber(carPriceInput.value);
-  const specialColor = parseNumber(specialColorInput.value);
-  const downPaymentPercent = downPaymentPercentSelect.value === "custom"
-    ? (summary.netCarPrice > 0 ? (summary.downPayment / summary.netCarPrice) * 100 : 0)
-    : parseNumber(downPaymentPercentSelect.value);
-  const netPrice = summary.netCarPrice;
-  const loanYears = summary.loanTermMonths / 12;
-  const giftsText = selectedGifts.length > 0
-    ? selectedGifts.map((gift) => gift.label).join("\n")
-    : "- ยังไม่ได้เลือกของแถม";
-
-  const installmentLines = summary.isBalloon
-    ? [
-        `งวดที่ 1-${Math.max(summary.loanTermMonths - 1, 1)} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(getDisplayedMonthlyPayment(summary.monthlyPayment, true))} บาท`,
-        `งวดที่ ${summary.loanTermMonths} (RV${formatPercent(summary.rvPercentage)}%) = ${formatSummaryNumber(summary.balloonPayment)} บาท`,
-        `( งวดที่ ${summary.loanTermMonths} ลูกค้าสามารถปิดยอดได้ หรือ สามารถผ่อนต่อได้อีก 2 ปี คำนวณดอกเบี้ยจากไฟแนนซ์ )`
-      ]
-    : [
-        `งวดที่ 1-${summary.loanTermMonths} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(summary.monthlyPayment)} บาท`
-      ];
-
-  return [
-    `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨`,
-    `📞 โทร: ${customerPhone}`,
-    `📍ช่องทาง: ${customerChannel}`,
-    `📆ฤกษ์ออกรถ: ${deliveryDate}`,
-    "",
-    `🚗 ${headline} 💨`,
-    `(🌼 ${campaignLabel} 🌼)`,
-    `ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
-    `บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`,
-    `             = ${formatSummaryNumber(summary.priceWithColor)} บาท`,
-    `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`,
-    `ราคาสุทธิ ${formatSummaryNumber(netPrice)} บาท`,
-    `ดาวน์${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
-    `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
-    `ผ่อน ${formatPercent(loanYears)} ปี`,
-    ...installmentLines,
-    "",
-    "🌼✨ ของแถม ✨🌼",
-    giftsText,
-    "",
-    "✨🎀 ค่าใช้จ่ายวันรับรถ 🎀✨",
-    `1.เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
-    `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`,
-    `ส่วนลดช่วยดาวน์ ${formatSummaryNumber(summary.supportDiscount)} บาท`,
-    `                      = ${formatSummaryNumber(summary.daySubtotal)} บาท`,
-    `2.ค่าจดทะเบียน = ${formatSummaryNumber(summary.registrationFee)}`,
-    `3.ค่ามัดจำป้ายแดง = ${formatSummaryNumber(summary.redPlateDeposit)} (ได้คืน)`,
-    `4.ค่าธรรมเนียมไฟแนนซ์ = ${formatSummaryNumber(summary.financeFee)} บาท`,
-    `5.VAT 3% (${formatSummaryNumber(summary.accessoryAmount + summary.supportDiscount)}) = ${formatSummaryNumber(summary.vatAmount)} บาท`,
-    `รวมค่าใช้จ่ายออกรถ = ${formatSummaryNumber(summary.driveAwayTotal)} บาท`,
-    `หักเงินจอง       = ${formatSummaryNumber(summary.bookingDeposit)} บาท`,
-    `*ผ่านไฟแนนซ์ลูกค้าโอนเพิ่ม ${formatSummaryNumber(summary.extraTransfer)}`,
-    `เหลือยอดชำระ = ${formatSummaryNumber(summary.remainingBalance)} บาท`
-  ].join("\n");
-}
-
-function buildSummaryText() {
-  const summary = getCalculatorSummary();
-  const customerName = customerNameInput.value.trim();
-  const customerPhone = customerPhoneInput.value.trim();
-  const customerChannel = customerChannelInput.value.trim();
-  const deliveryDate = deliveryDateInput.value.trim();
-  const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
-  const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
-  const headline = modelText || "รุ่นรถที่เลือก";
-  const carPrice = parseNumber(carPriceInput.value);
-  const specialColor = parseNumber(specialColorInput.value);
-  const downPaymentPercent = downPaymentPercentSelect.value === "custom"
-    ? (summary.netCarPrice > 0 ? (summary.downPayment / summary.netCarPrice) * 100 : 0)
-    : parseNumber(downPaymentPercentSelect.value);
-  const netPrice = summary.netCarPrice;
-  const loanYears = summary.loanTermMonths / 12;
-  const giftsText = selectedGifts.length > 0
-    ? selectedGifts.map((gift) => gift.label).join("\n")
-    : "- ยังไม่ได้เลือกของแถม";
-  const hasSpecialColor = specialColorInput.value.trim() !== "";
-  const hasAccessory = accessoryInput.value.trim() !== "";
-  const hasSupportDiscount = supportDiscountInput.value.trim() !== "";
-  const hasRegistrationFee = registrationFeeInput.value.trim() !== "";
-  const hasFinanceFee = financeFeeInput.value.trim() !== "";
-  const hasBookingDeposit = bookingDepositInput.value.trim() !== "";
-  const hasExtraTransfer = extraTransferInput.value.trim() !== "";
-  const hasVatBase = hasAccessory || hasSupportDiscount;
-
-  const installmentLines = summary.isBalloon
-    ? [
-        `งวดที่ 1-${Math.max(summary.loanTermMonths - 1, 1)} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(getDisplayedMonthlyPayment(summary.monthlyPayment, true))} บาท`,
-        `งวดที่ ${summary.loanTermMonths} (RV${formatPercent(summary.rvPercentage)}%) = ${formatSummaryNumber(summary.balloonPayment)} บาท`,
-        `( งวดที่ ${summary.loanTermMonths} ลูกค้าสามารถปิดยอดได้ หรือ สามารถผ่อนต่อได้อีก 2 ปี คำนวณดอกเบี้ยจากไฟแนนซ์ )`
-      ]
-    : [
-        `งวดที่ 1-${summary.loanTermMonths} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(summary.monthlyPayment)} บาท`
-      ];
-
-  const customerLines = [
-    customerName ? `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨` : "",
-    customerPhone ? `📞 โทร: ${customerPhone}` : "",
-    customerChannel ? `📍ช่องทาง: ${customerChannel}` : "",
-    deliveryDate ? `📆ฤกษ์ออกรถ: ${deliveryDate}` : ""
-  ].filter(Boolean);
-
-  return [
-    ...customerLines,
-    ...(customerLines.length > 0 ? [""] : []),
-    `🚗 ${headline} 💨`,
-    `(🌼 ${campaignLabel} 🌼)`,
-    `ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
-    ...(hasSpecialColor ? [`บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`] : []),
-    ...(hasSpecialColor ? [`             = ${formatSummaryNumber(summary.priceWithColor)} บาท`] : []),
-    ...(hasAccessory ? [`บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`] : []),
-    `ราคาสุทธิ ${formatSummaryNumber(netPrice)} บาท`,
-    `ดาวน์${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
-    `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
-    `ผ่อน ${formatPercent(loanYears)} ปี`,
-    ...installmentLines,
-    "",
-    "🌼✨ ของแถม ✨🌼",
-    giftsText,
-    "",
-    "✨🎀 ค่าใช้จ่ายวันรับรถ 🎀✨",
-    `1.เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
-    ...(hasAccessory ? [`บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`] : []),
-    ...(hasSupportDiscount ? [`ส่วนลดช่วยดาวน์ ${formatSummaryNumber(summary.supportDiscount)} บาท`] : []),
-    `                      = ${formatSummaryNumber(summary.daySubtotal)} บาท`,
-    ...(hasRegistrationFee ? [`2.ค่าจดทะเบียน = ${formatSummaryNumber(summary.registrationFee)}`] : []),
-    `3.ค่ามัดจำป้ายแดง = ${formatSummaryNumber(summary.redPlateDeposit)} (ได้คืน)`,
-    ...(hasFinanceFee ? [`4.ค่าธรรมเนียมไฟแนนซ์ = ${formatSummaryNumber(summary.financeFee)} บาท`] : []),
-    ...(hasVatBase ? [`5.VAT 3% (${formatSummaryNumber(summary.accessoryAmount + summary.supportDiscount)}) = ${formatSummaryNumber(summary.vatAmount)} บาท`] : []),
-    `รวมค่าใช้จ่ายออกรถ = ${formatSummaryNumber(summary.driveAwayTotal)} บาท`,
-    ...(hasBookingDeposit ? [`หักเงินจอง       = ${formatSummaryNumber(summary.bookingDeposit)} บาท`] : []),
-    ...(hasExtraTransfer ? [`*ผ่านไฟแนนซ์ลูกค้าโอนเพิ่ม ${formatSummaryNumber(summary.extraTransfer)}`] : []),
-    `เหลือยอดชำระ = ${formatSummaryNumber(summary.remainingBalance)} บาท`
-  ].join("\n");
-}
 
 function syncDownPaymentHint() {
   const netCarPrice = getNetCarPrice();
@@ -1167,31 +878,31 @@ function buildSummaryText() {
       ];
 
   const customerLines = [
-    customerName ? `ชื่อลูกค้า: ${customerName}` : "",
-    customerPhone ? `โทร: ${customerPhone}` : "",
-    customerChannel ? `ช่องทาง: ${customerChannel}` : "",
-    deliveryDate ? `ฤกษ์ออกรถ: ${deliveryDate}` : ""
+    customerName ? `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨` : "",
+    customerPhone ? `📞 โทร: ${customerPhone}` : "",
+    customerChannel ? `📍 ช่องทาง: ${customerChannel}` : "",
+    deliveryDate ? `📆 ฤกษ์ออกรถ: ${deliveryDate}` : ""
   ].filter(Boolean);
 
   return [
     ...customerLines,
     ...(customerLines.length > 0 ? [""] : []),
-    `${headline}`,
-    `(${campaignLabel})`,
-    `ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
+    `🚗 ${headline} 💨`,
+    `(🌼 ${campaignLabel} 🌼)`,
+    `💵 ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
     ...(hasSpecialColor ? [`บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`] : []),
     ...(hasSpecialColor ? [`= ${formatSummaryNumber(summary.priceWithColor)} บาท`] : []),
     ...(hasAdjustment ? [adjustmentLine] : []),
     `ราคาสุทธิ ${formatSummaryNumber(summary.netCarPrice)} บาท`,
-    `ดาวน์ ${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
+    `🌟ดาวน์ ${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
     `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
     `ผ่อน ${formatPercent(loanYears)} ปี`,
     ...installmentLines,
     "",
-    "ของแถม",
+    "🌼✨ ของแถม ✨🌼",
     giftsText,
     "",
-    "ค่าใช้จ่ายวันรับรถ",
+    "✨🎀 ค่าใช้จ่ายวันรับรถ 🎀✨",
     `1. เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
     ...(!summary.isDiscountMode && hasAdjustment ? [`บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`] : []),
     ...(!summary.isDiscountMode && hasSupportDiscount ? [`ส่วนลดช่วยดาวน์ ${formatSummaryNumber(summary.supportDiscount)} บาท`] : []),
