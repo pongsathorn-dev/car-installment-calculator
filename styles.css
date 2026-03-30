@@ -440,6 +440,14 @@ button:hover {
   width: 100%;
 }
 
+#model-edit-form {
+  grid-template-columns: 1fr;
+}
+
+#model-edit-form button {
+  width: 100%;
+}
+
 .admin-grid-form {
   grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.8fr) 160px;
   align-items: end;
