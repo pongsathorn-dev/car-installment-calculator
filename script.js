@@ -150,6 +150,7 @@
 };
 const DEFAULT_TOYOTA_MODEL_DATA = JSON.parse(JSON.stringify(TOYOTA_MODEL_DATA));
 const VEHICLE_CATALOG_STORAGE_KEY = "car-installment-vehicle-catalog";
+const CALCULATOR_FORM_STORAGE_KEY = "car-installment-calculator-form-state";
 
 const form = document.getElementById("loan-form");
 const modelCreateForm = document.getElementById("model-create-form");
@@ -1027,6 +1028,117 @@ function saveGiftState() {
   }
 }
 
+function buildCalculatorFormState() {
+  return {
+    customerName: customerNameInput?.value ?? "",
+    customerPhone: customerPhoneInput?.value ?? "",
+    customerChannel: customerChannelInput?.value ?? "",
+    deliveryDate: deliveryDateInput?.value ?? "",
+    calculationType: calculationTypeSelect?.value ?? "balloon",
+    carModel: carModelInput?.value ?? "",
+    carSubmodel: carSubmodelInput?.value ?? "",
+    carPrice: carPriceInput?.value ?? "",
+    specialColor: specialColorInput?.value ?? "",
+    accessoryValue: accessoryInput?.value ?? "",
+    accessoryMode: accessoryModeToggleButton?.dataset.mode ?? "accessory",
+    downPaymentPercent: downPaymentPercentSelect?.value ?? "15",
+    downPayment: downPaymentInput?.value ?? "",
+    supportDiscount: supportDiscountInput?.value ?? "",
+    interestRate: interestRateInput?.value ?? "",
+    loanTerm: loanTermSelect?.value ?? "84",
+    rvPercentage: rvPercentageInput?.value ?? "",
+    registrationFee: registrationFeeInput?.value ?? "",
+    financeFee: financeFeeInput?.value ?? "",
+    bookingDeposit: bookingDepositInput?.value ?? "",
+    extraTransfer: extraTransferInput?.value ?? "",
+    margin: marginInput?.value ?? "0",
+    selectedGifts: selectedGifts.map((gift) => ({
+      label: gift.label,
+      value: gift.value
+    }))
+  };
+}
+
+function saveCalculatorFormState() {
+  if (!(form instanceof HTMLFormElement)) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      CALCULATOR_FORM_STORAGE_KEY,
+      JSON.stringify(buildCalculatorFormState())
+    );
+  } catch (error) {
+    console.error("Failed to save calculator form state:", error);
+  }
+}
+
+function loadCalculatorFormState() {
+  if (!(form instanceof HTMLFormElement)) {
+    return false;
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(CALCULATOR_FORM_STORAGE_KEY);
+    if (!storedValue) {
+      return false;
+    }
+
+    const state = JSON.parse(storedValue);
+    if (!state || typeof state !== "object") {
+      return false;
+    }
+
+    customerNameInput.value = String(state.customerName ?? "");
+    customerPhoneInput.value = String(state.customerPhone ?? "");
+    customerChannelInput.value = String(state.customerChannel ?? "");
+    deliveryDateInput.value = String(state.deliveryDate ?? "");
+    calculationTypeSelect.value = String(state.calculationType ?? "balloon");
+    carModelInput.value = String(state.carModel ?? "");
+    carSubmodelInput.value = String(state.carSubmodel ?? "");
+    carPriceInput.value = String(state.carPrice ?? "");
+    specialColorInput.value = String(state.specialColor ?? "");
+    accessoryInput.value = String(state.accessoryValue ?? "");
+    accessoryModeToggleButton.dataset.mode = String(state.accessoryMode ?? "accessory");
+    downPaymentPercentSelect.value = String(state.downPaymentPercent ?? "15");
+    downPaymentInput.value = String(state.downPayment ?? "");
+    supportDiscountInput.value = String(state.supportDiscount ?? "");
+    interestRateInput.value = String(state.interestRate ?? "");
+    loanTermSelect.value = String(state.loanTerm ?? "84");
+    rvPercentageInput.value = String(state.rvPercentage ?? "");
+    registrationFeeInput.value = String(state.registrationFee ?? "");
+    financeFeeInput.value = String(state.financeFee ?? "");
+    bookingDepositInput.value = String(state.bookingDeposit ?? "");
+    extraTransferInput.value = String(state.extraTransfer ?? "");
+    marginInput.value = String(state.margin ?? "0");
+
+    selectedGifts = Array.isArray(state.selectedGifts)
+      ? state.selectedGifts
+        .filter((gift) => gift && typeof gift.label === "string")
+        .map((gift) => ({
+          label: gift.label,
+          value: String(gift.value ?? "")
+        }))
+      : [];
+
+    populateCarSubmodels();
+    renderSelectedGifts();
+    return true;
+  } catch (error) {
+    console.error("Failed to load calculator form state:", error);
+    return false;
+  }
+}
+
+function clearCalculatorFormState() {
+  try {
+    window.localStorage.removeItem(CALCULATOR_FORM_STORAGE_KEY);
+  } catch (error) {
+    console.error("Failed to clear calculator form state:", error);
+  }
+}
+
 async function loadGiftStateFromFirebase() {
   const firebaseGiftStore = window.firebaseGiftStore;
   if (!firebaseGiftStore?.loadGiftState) {
@@ -1050,6 +1162,7 @@ async function loadGiftStateFromFirebase() {
     selectedGifts = selectedGifts.filter((gift) => giftOptions.includes(gift.label));
     renderSelectedGifts();
     calculateLoan();
+    saveCalculatorFormState();
   } catch (error) {
     console.error("Failed to load gifts from Firebase:", error);
   }
@@ -1409,6 +1522,7 @@ function addGiftOption() {
   giftCustomInput.value = "";
   buildGiftOptionMarkup();
   saveGiftState();
+  saveCalculatorFormState();
 }
 
 function removeGiftOption(label) {
@@ -1418,6 +1532,7 @@ function removeGiftOption(label) {
   renderSelectedGifts();
   calculateLoan();
   saveGiftState();
+  saveCalculatorFormState();
 }
 
 function moveGiftOption(label, direction) {
@@ -1434,6 +1549,7 @@ function moveGiftOption(label, direction) {
   [giftOptions[currentIndex], giftOptions[targetIndex]] = [giftOptions[targetIndex], giftOptions[currentIndex]];
   buildGiftOptionMarkup();
   saveGiftState();
+  saveCalculatorFormState();
 }
 
 function openGiftModal() {
@@ -1458,6 +1574,7 @@ function removeGiftByIndex(index) {
   renderSelectedGifts();
   calculateLoan();
   saveGiftState();
+  saveCalculatorFormState();
 }
 
 function renderSelectedGifts() {
@@ -1506,6 +1623,7 @@ function syncSelectedGiftsFromModal() {
   calculateLoan();
   closeGiftModal();
   saveGiftState();
+  saveCalculatorFormState();
 }
 
 function clearResults() {
@@ -1829,6 +1947,7 @@ function resetFormState() {
   calculateLoan();
   syncDownPaymentHint();
   setMessage("");
+  clearCalculatorFormState();
 }
 
 function handleModelChange() {
@@ -1844,6 +1963,7 @@ function handleModelChange() {
   if (entries.length === 1) {
     carSubmodelInput.value = entries[0].name;
     applySelectedSubmodelPrice();
+    saveCalculatorFormState();
     return;
   }
 
@@ -1860,6 +1980,8 @@ function handleModelChange() {
   } else {
     calculateLoan();
   }
+
+  saveCalculatorFormState();
 }
 
 function handleSubmodelChange() {
@@ -1875,6 +1997,8 @@ function handleSubmodelChange() {
       calculateLoan();
     }
   }
+
+  saveCalculatorFormState();
 }
 
 function handleFormattedNumericInput(event) {
@@ -1893,6 +2017,7 @@ function initializeCalculator() {
     return;
   }
 
+  loadCalculatorFormState();
   accessoryModeToggleButton.dataset.mode = accessoryModeToggleButton.dataset.mode || "accessory";
   refreshVehicleCatalogUI({ showSelectionMessage: false });
   renderSelectedGifts();
@@ -2038,11 +2163,13 @@ if (form instanceof HTMLFormElement) {
 
     if (downPaymentPercentSelect.value !== "custom") {
       syncDownPaymentWithPercent();
+      saveCalculatorFormState();
       return;
     }
 
     syncDownPaymentHint();
     calculateLoan();
+    saveCalculatorFormState();
   });
 
   carModelInput.addEventListener("input", handleModelChange);
@@ -2076,18 +2203,24 @@ if (form instanceof HTMLFormElement) {
       }
 
       calculateLoan();
+      saveCalculatorFormState();
     });
 
-    input.addEventListener("blur", handleFormattedNumericInput);
+    input.addEventListener("blur", (event) => {
+      handleFormattedNumericInput(event);
+      saveCalculatorFormState();
+    });
   });
 
   interestRateInput.addEventListener("input", () => {
     calculateLoan();
+    saveCalculatorFormState();
   });
 
   interestRateInput.addEventListener("blur", () => {
     formatInterestRateInput(interestRateInput, interestRateInput.value);
     calculateLoan();
+    saveCalculatorFormState();
   });
 
   selectedGiftsContainer.addEventListener("input", (event) => {
@@ -2104,6 +2237,7 @@ if (form instanceof HTMLFormElement) {
     selectedGifts[index].value = input.value;
     calculateLoan();
     saveGiftState();
+    saveCalculatorFormState();
   });
 
   selectedGiftsContainer.addEventListener("click", (event) => {
@@ -2135,6 +2269,7 @@ if (form instanceof HTMLFormElement) {
     selectedGifts[index].value = input.value;
     calculateLoan();
     saveGiftState();
+    saveCalculatorFormState();
   }, true);
 
   giftOptionsContainer.addEventListener("click", (event) => {
@@ -2160,8 +2295,14 @@ if (form instanceof HTMLFormElement) {
     removeGiftOption(removeButton.dataset.removeOption ?? "");
   });
 
-  loanTermSelect.addEventListener("change", calculateLoan);
-  loanTermSelect.addEventListener("change", toggleCalculationType);
+  loanTermSelect.addEventListener("change", () => {
+    calculateLoan();
+    saveCalculatorFormState();
+  });
+  loanTermSelect.addEventListener("change", () => {
+    toggleCalculationType();
+    saveCalculatorFormState();
+  });
   addGiftButton.addEventListener("click", openGiftModal);
   giftModalCloseButton.addEventListener("click", closeGiftModal);
   giftModalCancelButton.addEventListener("click", closeGiftModal);
@@ -2186,6 +2327,22 @@ if (form instanceof HTMLFormElement) {
   copySummaryButton.addEventListener("click", () => {
     copySummaryText();
   });
+
+  [
+    customerNameInput,
+    customerPhoneInput,
+    customerChannelInput,
+    deliveryDateInput,
+    calculationTypeSelect,
+    carModelInput,
+    carSubmodelInput,
+    downPaymentPercentSelect
+  ].forEach((input) => {
+    input?.addEventListener("input", saveCalculatorFormState);
+    input?.addEventListener("change", saveCalculatorFormState);
+  });
+
+  window.addEventListener("beforeunload", saveCalculatorFormState);
 }
 
 initializeVehicleCatalog();
