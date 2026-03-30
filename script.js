@@ -148,8 +148,31 @@
     { name: "GR Yaris", price: 3499000 }
   ]
 };
+const DEFAULT_TOYOTA_MODEL_DATA = JSON.parse(JSON.stringify(TOYOTA_MODEL_DATA));
+const VEHICLE_CATALOG_STORAGE_KEY = "car-installment-vehicle-catalog";
 
 const form = document.getElementById("loan-form");
+const modelCreateForm = document.getElementById("model-create-form");
+const newModelNameInput = document.getElementById("new-model-name");
+const modelAdminList = document.getElementById("model-admin-list");
+const modelAdminEmpty = document.getElementById("model-admin-empty");
+const modelAdminDetail = document.getElementById("model-admin-detail");
+const modelEditForm = document.getElementById("model-edit-form");
+const editModelNameInput = document.getElementById("edit-model-name");
+const deleteModelButton = document.getElementById("delete-model-button");
+const selectedModelTitle = document.getElementById("selected-model-title");
+const selectedModelMeta = document.getElementById("selected-model-meta");
+const submodelCreateForm = document.getElementById("submodel-create-form");
+const newSubmodelNameInput = document.getElementById("new-submodel-name");
+const newSubmodelPriceInput = document.getElementById("new-submodel-price");
+const submodelAdminList = document.getElementById("submodel-admin-list");
+const adminConfirmModal = document.getElementById("admin-confirm-modal");
+const adminConfirmTitle = document.getElementById("admin-confirm-title");
+const adminConfirmText = document.getElementById("admin-confirm-text");
+const adminConfirmCloseButton = document.getElementById("admin-confirm-close");
+const adminConfirmCancelButton = document.getElementById("admin-confirm-cancel");
+const adminConfirmSubmitButton = document.getElementById("admin-confirm-submit");
+const syncToyotaDataButton = document.getElementById("sync-toyota-data-button");
 const customerNameInput = document.getElementById("customer-name");
 const customerPhoneInput = document.getElementById("customer-phone");
 const customerChannelInput = document.getElementById("customer-channel");
@@ -237,6 +260,40 @@ const GIFT_OPTIONS = [
 ];
 let selectedGifts = [];
 let giftOptions = [...GIFT_OPTIONS];
+let selectedCatalogModel = "";
+let pendingAdminConfirmationAction = null;
+let isSubmittingAdminConfirmation = false;
+
+const TOYOTA_THAILAND_IMPORT_SOURCES = [
+  { modelName: "Yaris", url: "https://www.toyota.co.th/en/model/yaris/grade" },
+  { modelName: "Yaris ATIV", url: "https://www.toyota.co.th/en/model/yarisativ/grade" },
+  { modelName: "Yaris ATIV GR Sport", url: "https://www.toyota.co.th/en/model/yarisativ_grsport/grade" },
+  { modelName: "Yaris Cross", url: "https://www.toyota.co.th/en/model/yariscross/grade" },
+  { modelName: "Corolla Cross", url: "https://www.toyota.co.th/en/model/corollacross/grade" },
+  { modelName: "Corolla Altis", url: "https://www.toyota.co.th/en/model/altis/grade" },
+  { modelName: "Corolla Altis GR Sport", url: "https://www.toyota.co.th/en/model/altis_grsport/grade" },
+  { modelName: "CAMRY", url: "https://www.toyota.co.th/en/model/camry/grade" },
+  { modelName: "Veloz", url: "https://www.toyota.co.th/en/model/veloz/grade" },
+  { modelName: "Innova Zenix", url: "https://www.toyota.co.th/en/model/innovazenix/grade" },
+  { modelName: "Fortuner Leader", url: "https://www.toyota.co.th/en/model/fortuner_leader/grade" },
+  { modelName: "Fortuner Legender", url: "https://www.toyota.co.th/en/model/fortuner_legender/grade" },
+  { modelName: "Fortuner GR Sport", url: "https://www.toyota.co.th/en/model/fortuner_grsport/grade" },
+  { modelName: "Alphard", url: "https://www.toyota.co.th/en/model/alphard/grade" },
+  { modelName: "bZ4X", url: "https://www.toyota.co.th/en/model/bz4x/grade" },
+  { modelName: "Hiace", url: "https://www.toyota.co.th/en/model/hiace/grade" },
+  { modelName: "Commuter", url: "https://www.toyota.co.th/en/model/commuter/grade" },
+  { modelName: "Majesty", url: "https://www.toyota.co.th/en/model/majesty/grade" },
+  { modelName: "Hilux Champ", url: "https://www.toyota.co.th/en/model/hiluxchamp/grade" },
+  { modelName: "Hilux Revo Standard Cab", url: "https://www.toyota.co.th/en/model/hilux_revo_standard/grade" },
+  { modelName: "Hilux Revo Z Edition", url: "https://www.toyota.co.th/en/model/hilux_revo_zedition/grade" },
+  { modelName: "Hilux Travo Standard Cab 4TREX", url: "https://www.toyota.co.th/en/model/hilux_travo_standard/grade" },
+  { modelName: "Hilux Travo Prerunner & 4TREX", url: "https://www.toyota.co.th/en/model/hilux_travo_prerunner/grade" },
+  { modelName: "Hilux Travo Overland", url: "https://www.toyota.co.th/en/model/hilux_travo_overland/grade" },
+  { modelName: "Hilux Travo-e", url: "https://www.toyota.co.th/en/model/hilux_travo_e/grade" },
+  { modelName: "GR 86", url: "https://www.toyota.co.th/en/model/gr86/grade" },
+  { modelName: "GR Corolla", url: "https://www.toyota.co.th/en/model/grcorolla/grade" },
+  { modelName: "GR Yaris", url: "https://www.toyota.co.th/en/model/gryaris/grade" }
+];
 
 function parseNumber(value) {
   const normalized = String(value ?? "").replace(/,/g, "").trim();
@@ -363,7 +420,600 @@ function setBalloonVisibility(isBalloon) {
 }
 
 function setMessage(text = "") {
-  message.textContent = text;
+  if (message instanceof HTMLElement) {
+    message.textContent = text;
+  }
+}
+
+function hasCalculatorVehicleFields() {
+  return (
+    carModelInput instanceof HTMLInputElement &&
+    carSubmodelInput instanceof HTMLInputElement &&
+    carPriceInput instanceof HTMLInputElement
+  );
+}
+
+function closeAdminConfirmationModal() {
+  if (adminConfirmModal instanceof HTMLElement) {
+    adminConfirmModal.classList.add("is-hidden");
+  }
+  if (adminConfirmSubmitButton instanceof HTMLButtonElement) {
+    adminConfirmSubmitButton.disabled = false;
+    adminConfirmSubmitButton.textContent = "ยืนยัน";
+  }
+  pendingAdminConfirmationAction = null;
+  isSubmittingAdminConfirmation = false;
+}
+
+function openAdminConfirmationModal(detailText, onConfirm, options = {}) {
+  if (
+    !(adminConfirmModal instanceof HTMLElement) ||
+    !(adminConfirmText instanceof HTMLElement) ||
+    !(adminConfirmSubmitButton instanceof HTMLButtonElement)
+  ) {
+    if (typeof onConfirm === "function") {
+      onConfirm();
+    }
+    return;
+  }
+
+  if (adminConfirmTitle instanceof HTMLElement) {
+    adminConfirmTitle.textContent = options.title ?? "ยืนยันการทำรายการ";
+  }
+  adminConfirmText.textContent = detailText;
+  adminConfirmSubmitButton.textContent = options.confirmLabel ?? "ยืนยัน";
+  pendingAdminConfirmationAction = onConfirm;
+  adminConfirmModal.classList.remove("is-hidden");
+}
+
+async function submitAdminConfirmation() {
+  if (isSubmittingAdminConfirmation) {
+    return;
+  }
+
+  const action = pendingAdminConfirmationAction;
+  if (typeof action !== "function") {
+    closeAdminConfirmationModal();
+    return;
+  }
+
+  isSubmittingAdminConfirmation = true;
+  if (adminConfirmSubmitButton instanceof HTMLButtonElement) {
+    adminConfirmSubmitButton.disabled = true;
+    adminConfirmSubmitButton.textContent = "กำลังบันทึก...";
+  }
+
+  try {
+    await action();
+    closeAdminConfirmationModal();
+  } catch (error) {
+    console.error("Admin confirmation action failed:", error);
+    if (adminConfirmSubmitButton instanceof HTMLButtonElement) {
+      adminConfirmSubmitButton.disabled = false;
+      adminConfirmSubmitButton.textContent = "ยืนยัน";
+    }
+    isSubmittingAdminConfirmation = false;
+    setMessage("บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+  }
+}
+
+function parseToyotaThailandPrice(text) {
+  const matchedPrice = String(text ?? "").match(/(?:฿|ราคาเริ่มต้น\s*|start price\s*)([\d,]+)/i);
+  return matchedPrice ? parseNumber(matchedPrice[1]) : 0;
+}
+
+function parseToyotaThailandGradePage(content) {
+  const lines = String(content ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const entries = [];
+  const seenNames = new Set();
+  let inModelLineup = false;
+  let pendingGradeName = "";
+  let expectedGradeCount = 0;
+
+  lines.forEach((line) => {
+    if (/model line-up|discover your/i.test(line)) {
+      inModelLineup = true;
+      return;
+    }
+
+    if (!inModelLineup) {
+      return;
+    }
+
+    const matchedGradeCount = line.match(/(?:there are|มีทั้งหมด)\s*(\d+)\s*(?:grade|เกรด)/i);
+    if (matchedGradeCount) {
+      expectedGradeCount = parseNumber(matchedGradeCount[1]);
+      return;
+    }
+
+    if (/promotion|special offers|specification|accessories|ดูข้อมูลจำเพาะ|ข้อเสนอพิเศษ/i.test(line)) {
+      inModelLineup = false;
+      pendingGradeName = "";
+      return;
+    }
+
+    if (/^#{2,4}\s+/.test(line)) {
+      pendingGradeName = line.replace(/^#{2,4}\s+/, "").trim();
+      return;
+    }
+
+    if (!pendingGradeName) {
+      return;
+    }
+
+    const parsedPrice = parseToyotaThailandPrice(line);
+    if (!parsedPrice || seenNames.has(pendingGradeName)) {
+      return;
+    }
+
+    seenNames.add(pendingGradeName);
+    entries.push({
+      name: pendingGradeName,
+      price: parsedPrice
+    });
+    pendingGradeName = "";
+  });
+
+  return {
+    entries,
+    expectedGradeCount,
+    isComplete: expectedGradeCount > 0 ? entries.length >= expectedGradeCount : entries.length > 0
+  };
+}
+
+async function fetchToyotaThailandCatalog() {
+  const importedModels = {};
+  const failedSources = [];
+
+  for (let index = 0; index < TOYOTA_THAILAND_IMPORT_SOURCES.length; index += 1) {
+    const source = TOYOTA_THAILAND_IMPORT_SOURCES[index];
+    setMessage(`กำลังดึงข้อมูลจาก Toyota Thailand (${index + 1}/${TOYOTA_THAILAND_IMPORT_SOURCES.length}) : ${source.modelName}`);
+
+    try {
+      const proxyTargetUrl = source.url.replace(/^https?:\/\//, "");
+      const response = await fetch(`https://r.jina.ai/http://${proxyTargetUrl}`, {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const content = await response.text();
+      const parsedResult = parseToyotaThailandGradePage(content);
+
+      if (!parsedResult.entries.length) {
+        throw new Error("No grades found");
+      }
+
+      importedModels[source.modelName] = parsedResult;
+    } catch (error) {
+      console.error(`Failed to fetch Toyota Thailand data for ${source.modelName}:`, error);
+      failedSources.push(source.modelName);
+    }
+  }
+
+  return {
+    importedModels,
+    failedSources
+  };
+}
+
+function buildToyotaCatalogDiff(importedModels) {
+  const changes = [];
+
+  Object.entries(importedModels).forEach(([modelName, importedModel]) => {
+    const importedEntries = Array.isArray(importedModel) ? importedModel : importedModel.entries ?? [];
+    const allowRemoval = Array.isArray(importedModel) ? true : importedModel.isComplete !== false;
+    const currentEntries = TOYOTA_MODEL_DATA[modelName] ?? [];
+    const currentByName = new Map(currentEntries.map((entry) => [entry.name, entry.price]));
+    const importedByName = new Map(importedEntries.map((entry) => [entry.name, entry.price]));
+
+    importedEntries.forEach((entry) => {
+      if (!currentByName.has(entry.name)) {
+        changes.push(`+ ${modelName}: เพิ่มรุ่นย่อย ${entry.name} ราคา ${formatNumber(entry.price)} บาท`);
+        return;
+      }
+
+      const currentPrice = currentByName.get(entry.name);
+      if (currentPrice !== entry.price) {
+        changes.push(`~ ${modelName}: ${entry.name} ราคา ${formatNumber(currentPrice)} -> ${formatNumber(entry.price)} บาท`);
+      }
+    });
+
+    if (!allowRemoval) {
+      return;
+    }
+
+    currentEntries.forEach((entry) => {
+      if (!importedByName.has(entry.name)) {
+        changes.push(`- ${modelName}: ลบรุ่นย่อย ${entry.name}`);
+      }
+    });
+  });
+
+  return changes;
+}
+
+function applyImportedToyotaCatalog(importedModels) {
+  Object.entries(importedModels).forEach(([modelName, importedModel]) => {
+    const importedEntries = Array.isArray(importedModel) ? importedModel : importedModel.entries ?? [];
+    const allowRemoval = Array.isArray(importedModel) ? true : importedModel.isComplete !== false;
+    const currentEntries = TOYOTA_MODEL_DATA[modelName] ?? [];
+    const mergedEntries = importedEntries.map((entry) => ({
+      name: entry.name,
+      price: entry.price
+    }));
+
+    if (!allowRemoval) {
+      currentEntries.forEach((entry) => {
+        if (mergedEntries.some((importedEntry) => importedEntry.name === entry.name)) {
+          return;
+        }
+
+        mergedEntries.push({
+          name: entry.name,
+          price: entry.price
+        });
+      });
+    }
+
+    TOYOTA_MODEL_DATA[modelName] = mergedEntries;
+  });
+}
+
+async function handleToyotaThailandSync() {
+  if (!(syncToyotaDataButton instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  syncToyotaDataButton.disabled = true;
+  syncToyotaDataButton.textContent = "กำลังดึงข้อมูล...";
+
+  try {
+    const { importedModels, failedSources } = await fetchToyotaThailandCatalog();
+    const importedModelNames = Object.keys(importedModels);
+
+    if (!importedModelNames.length) {
+      setMessage("ไม่สามารถดึงข้อมูลจาก Toyota Thailand ได้ในขณะนี้");
+      return;
+    }
+
+    const changes = buildToyotaCatalogDiff(importedModels);
+    if (changes.length === 0 && failedSources.length === 0) {
+      setMessage("ไม่พบข้อมูลที่เปลี่ยนแปลงจาก Toyota Thailand");
+      return;
+    }
+
+    const previewLines = [
+      `ตรวจพบข้อมูลอัปเดตจาก Toyota Thailand จำนวน ${formatNumber(changes.length)} รายการ`,
+      "",
+      ...(changes.length > 0 ? changes : ["ไม่พบรายการที่แตกต่างจากข้อมูลปัจจุบัน"]),
+      ...(failedSources.length > 0 ? ["", `หมายเหตุ: ดึงข้อมูลไม่สำเร็จ ${formatNumber(failedSources.length)} รุ่น`, ...failedSources.map((modelName) => `- ${modelName}`)] : [])
+    ];
+
+    openAdminConfirmationModal(
+      previewLines.join("\n"),
+      async () => {
+        applyImportedToyotaCatalog(importedModels);
+        await persistVehicleCatalogAndRefresh("อัปเดตข้อมูลจาก Toyota Thailand แล้ว");
+      },
+      {
+        title: "ยืนยันอัปเดตข้อมูลจาก Toyota Thailand",
+        confirmLabel: "ยืนยันอัปเดต"
+      }
+    );
+  } catch (error) {
+    console.error("Toyota Thailand sync failed:", error);
+    setMessage("ดึงข้อมูลจาก Toyota Thailand ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+  } finally {
+    syncToyotaDataButton.disabled = false;
+    syncToyotaDataButton.textContent = "ดึงข้อมูลจาก Toyota Thailand";
+  }
+}
+
+function cloneModelCatalog(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildSanitizedVehicleCatalog(source) {
+  const fallbackCatalog = cloneModelCatalog(DEFAULT_TOYOTA_MODEL_DATA);
+  if (!source || typeof source !== "object" || Array.isArray(source)) {
+    return fallbackCatalog;
+  }
+
+  const sanitizedCatalog = {};
+
+  Object.entries(source).forEach(([rawModelName, rawEntries]) => {
+    const modelName = String(rawModelName ?? "").trim();
+    if (!modelName || !Array.isArray(rawEntries)) {
+      return;
+    }
+
+    const sanitizedEntries = [];
+    const usedSubmodelNames = new Set();
+
+    rawEntries.forEach((entry) => {
+      const submodelName = String(entry?.name ?? "").trim();
+      if (!submodelName || usedSubmodelNames.has(submodelName)) {
+        return;
+      }
+
+      usedSubmodelNames.add(submodelName);
+      sanitizedEntries.push({
+        name: submodelName,
+        price: Math.max(parseNumber(entry?.price), 0)
+      });
+    });
+
+    if (sanitizedEntries.length > 0) {
+      sanitizedCatalog[modelName] = sanitizedEntries;
+    }
+  });
+
+  return Object.keys(sanitizedCatalog).length > 0 ? sanitizedCatalog : fallbackCatalog;
+}
+
+function replaceToyotaModelData(nextCatalog) {
+  const sanitizedCatalog = buildSanitizedVehicleCatalog(nextCatalog);
+
+  Object.keys(TOYOTA_MODEL_DATA).forEach((modelName) => {
+    delete TOYOTA_MODEL_DATA[modelName];
+  });
+
+  Object.entries(sanitizedCatalog).forEach(([modelName, entries]) => {
+    TOYOTA_MODEL_DATA[modelName] = entries.map((entry) => ({
+      name: entry.name,
+      price: entry.price
+    }));
+  });
+}
+
+function loadVehicleCatalogFromLocalStorage() {
+  try {
+    const storedValue = window.localStorage.getItem(VEHICLE_CATALOG_STORAGE_KEY);
+    if (!storedValue) {
+      return false;
+    }
+
+    const parsedValue = JSON.parse(storedValue);
+    replaceToyotaModelData(parsedValue);
+    return true;
+  } catch (error) {
+    console.error("Failed to load vehicle catalog from localStorage:", error);
+    return false;
+  }
+}
+
+function saveVehicleCatalogToLocalStorage() {
+  try {
+    window.localStorage.setItem(
+      VEHICLE_CATALOG_STORAGE_KEY,
+      JSON.stringify(cloneModelCatalog(TOYOTA_MODEL_DATA))
+    );
+  } catch (error) {
+    console.error("Failed to save vehicle catalog to localStorage:", error);
+  }
+}
+
+async function saveVehicleCatalogState() {
+  saveVehicleCatalogToLocalStorage();
+  window.dispatchEvent(new CustomEvent("vehicle-catalog-updated"));
+
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (firebaseGiftStore?.saveVehicleCatalog) {
+    await firebaseGiftStore.saveVehicleCatalog({
+      models: cloneModelCatalog(TOYOTA_MODEL_DATA)
+    });
+  }
+}
+
+async function loadVehicleCatalogFromFirebase() {
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (!firebaseGiftStore?.loadVehicleCatalog) {
+    return;
+  }
+
+  try {
+    const remoteCatalog = await firebaseGiftStore.loadVehicleCatalog();
+    if (!remoteCatalog?.models) {
+      return;
+    }
+
+    replaceToyotaModelData(remoteCatalog.models);
+    saveVehicleCatalogToLocalStorage();
+    refreshVehicleCatalogUI({ showSelectionMessage: false });
+  } catch (error) {
+    console.error("Failed to load vehicle catalog from Firebase:", error);
+  }
+}
+
+async function persistVehicleCatalogAndRefresh(successMessage) {
+  refreshVehicleCatalogUI({ showSelectionMessage: false });
+
+  try {
+    await saveVehicleCatalogState();
+    refreshVehicleCatalogUI({ showSelectionMessage: false });
+    if (typeof successMessage === "string" && successMessage.trim()) {
+      setMessage(successMessage);
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to persist vehicle catalog:", error);
+    setMessage("บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    loadVehicleCatalogFromLocalStorage();
+    refreshVehicleCatalogUI({ showSelectionMessage: false });
+    return false;
+  }
+}
+
+function renderVehicleCatalogManager() {
+  if (
+    !(modelAdminList instanceof HTMLElement) ||
+    !(modelAdminEmpty instanceof HTMLElement) ||
+    !(modelAdminDetail instanceof HTMLElement) ||
+    !(editModelNameInput instanceof HTMLInputElement) ||
+    !(submodelAdminList instanceof HTMLElement)
+  ) {
+    return;
+  }
+
+  const modelNames = Object.keys(TOYOTA_MODEL_DATA).sort((left, right) => left.localeCompare(right, "th"));
+
+  if (!selectedCatalogModel || !TOYOTA_MODEL_DATA[selectedCatalogModel]) {
+    selectedCatalogModel = modelNames[0] ?? "";
+  }
+
+  modelAdminList.innerHTML = modelNames.length === 0
+    ? '<div class="empty-state">ยังไม่มีข้อมูลรุ่นรถ</div>'
+    : modelNames.map((modelName) => {
+      const isActive = modelName === selectedCatalogModel;
+      const entryCount = TOYOTA_MODEL_DATA[modelName]?.length ?? 0;
+
+      return `
+        <button
+          type="button"
+          class="model-admin-item${isActive ? " is-active" : ""}"
+          data-select-model="${escapeHtml(modelName)}"
+        >
+          <span class="model-admin-item-title">${escapeHtml(modelName)}</span>
+          <strong class="model-admin-item-count">${formatNumber(entryCount)} รุ่นย่อย</strong>
+        </button>
+      `;
+    }).join("");
+
+  const selectedEntries = TOYOTA_MODEL_DATA[selectedCatalogModel] ?? [];
+  const hasSelectedModel = Boolean(selectedCatalogModel) && selectedEntries.length > 0;
+
+  setElementVisibility(modelAdminEmpty, !hasSelectedModel);
+  setElementVisibility(modelAdminDetail, hasSelectedModel);
+
+  if (!hasSelectedModel) {
+    editModelNameInput.value = "";
+    if (selectedModelTitle instanceof HTMLElement) {
+      selectedModelTitle.textContent = "-";
+    }
+    if (selectedModelMeta instanceof HTMLElement) {
+      selectedModelMeta.textContent = "มี 0 รุ่นย่อย";
+    }
+    submodelAdminList.innerHTML = "";
+    return;
+  }
+
+  editModelNameInput.value = selectedCatalogModel;
+  if (selectedModelTitle instanceof HTMLElement) {
+    selectedModelTitle.textContent = selectedCatalogModel;
+  }
+  if (selectedModelMeta instanceof HTMLElement) {
+    selectedModelMeta.textContent = `มี ${formatNumber(selectedEntries.length)} รุ่นย่อย`;
+  }
+  submodelAdminList.innerHTML = selectedEntries.map((entry) => `
+    <form
+      class="submodel-admin-row"
+      data-submodel-form="${escapeHtml(entry.name)}"
+      autocomplete="off"
+    >
+      <label>
+        <span>รุ่นย่อย</span>
+        <input
+          type="text"
+          name="submodel-name"
+          value="${escapeHtml(entry.name)}"
+          data-original-submodel="${escapeHtml(entry.name)}"
+        >
+      </label>
+      <label>
+        <span>ราคา</span>
+        <input
+          type="text"
+          inputmode="decimal"
+          name="submodel-price"
+          value="${escapeHtml(formatSummaryNumber(entry.price))}"
+        >
+      </label>
+      <div class="submodel-admin-actions">
+        <button type="submit">บันทึก</button>
+        <button type="button" class="secondary-button" data-delete-submodel="${escapeHtml(entry.name)}">ลบ</button>
+      </div>
+    </form>
+  `).join("");
+}
+
+function refreshVehicleCatalogUI(options = {}) {
+  const hasCalculatorCatalogFields = (
+    carModelInput instanceof HTMLInputElement &&
+    carSubmodelInput instanceof HTMLInputElement &&
+    carModelOptions instanceof HTMLDataListElement &&
+    carSubmodelOptions instanceof HTMLDataListElement &&
+    carPriceInput instanceof HTMLInputElement
+  );
+
+  if (!hasCalculatorCatalogFields) {
+    renderVehicleCatalogManager();
+    return;
+  }
+
+  const showSelectionMessage = options.showSelectionMessage ?? true;
+  const previousModel = carModelInput.value.trim();
+  const previousSubmodel = carSubmodelInput.value.trim();
+
+  populateCarModels();
+
+  if (!previousModel || !TOYOTA_MODEL_DATA[previousModel]) {
+    carModelInput.value = "";
+    carSubmodelInput.value = "";
+    carSubmodelOptions.innerHTML = "";
+    if (previousModel) {
+      carPriceInput.value = "";
+    }
+    if (previousModel && showSelectionMessage) {
+      setMessage("ข้อมูลรุ่นรถถูกอัปเดตแล้ว กรุณาเลือกใหม่อีกครั้ง");
+    }
+  } else {
+    populateCarSubmodels();
+    const availableEntries = getSelectedModelEntries();
+    const matchedEntry = availableEntries.find((entry) => entry.name === previousSubmodel);
+
+    if (matchedEntry) {
+      carSubmodelInput.value = matchedEntry.name;
+      formatInputValue(carPriceInput, matchedEntry.price);
+    } else if (availableEntries.length === 1) {
+      carSubmodelInput.value = availableEntries[0].name;
+      formatInputValue(carPriceInput, availableEntries[0].price);
+    } else if (previousSubmodel) {
+      carSubmodelInput.value = "";
+      carPriceInput.value = "";
+      if (showSelectionMessage) {
+        setMessage("รุ่นย่อยที่เลือกถูกอัปเดตแล้ว กรุณาเลือกใหม่");
+      }
+    }
+  }
+
+  renderVehicleCatalogManager();
+
+  if (!(downPaymentPercentSelect instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  if (downPaymentPercentSelect.value !== "custom") {
+    syncDownPaymentWithPercent();
+  } else {
+    calculateLoan();
+  }
 }
 
 function saveGiftState() {
@@ -403,6 +1053,201 @@ async function loadGiftStateFromFirebase() {
   } catch (error) {
     console.error("Failed to load gifts from Firebase:", error);
   }
+}
+
+function addVehicleModel() {
+  const modelName = newModelNameInput.value.trim();
+  if (!modelName) {
+    setMessage("กรุณากรอกชื่อรุ่นรถก่อนเพิ่มรายการ");
+    return;
+  }
+
+  if (TOYOTA_MODEL_DATA[modelName]) {
+    setMessage("มีชื่อรุ่นรถนี้อยู่แล้ว");
+    return;
+  }
+
+  openAdminConfirmationModal(
+    `ยืนยันการเพิ่มรุ่นรถใหม่\n\nรุ่นรถ: ${modelName}\nระบบจะสร้างรุ่นย่อยเริ่มต้นชื่อ "รุ่นย่อยใหม่" ราคา 0 บาท`,
+    async () => {
+      TOYOTA_MODEL_DATA[modelName] = [{
+        name: "รุ่นย่อยใหม่",
+        price: 0
+      }];
+      selectedCatalogModel = modelName;
+      newModelNameInput.value = "";
+      await persistVehicleCatalogAndRefresh("เพิ่มรุ่นรถใหม่แล้ว");
+    }
+  );
+}
+
+function renameVehicleModel() {
+  if (!selectedCatalogModel || !TOYOTA_MODEL_DATA[selectedCatalogModel]) {
+    return;
+  }
+
+  const nextModelName = editModelNameInput.value.trim();
+  if (!nextModelName) {
+    setMessage("กรุณากรอกชื่อรุ่นรถ");
+    return;
+  }
+
+  if (nextModelName !== selectedCatalogModel && TOYOTA_MODEL_DATA[nextModelName]) {
+    setMessage("มีชื่อรุ่นรถนี้อยู่แล้ว");
+    return;
+  }
+
+  const currentModelName = selectedCatalogModel;
+
+  openAdminConfirmationModal(
+    `ยืนยันการบันทึกชื่อรุ่นรถ\n\nจาก: ${currentModelName}\nเป็น: ${nextModelName}`,
+    async () => {
+      const currentEntries = TOYOTA_MODEL_DATA[currentModelName].map((entry) => ({ ...entry }));
+
+      delete TOYOTA_MODEL_DATA[currentModelName];
+      TOYOTA_MODEL_DATA[nextModelName] = currentEntries;
+      selectedCatalogModel = nextModelName;
+
+      if (hasCalculatorVehicleFields() && carModelInput.value.trim() === currentModelName) {
+        carModelInput.value = nextModelName;
+      }
+
+      await persistVehicleCatalogAndRefresh("บันทึกชื่อรุ่นรถแล้ว");
+    }
+  );
+}
+
+function deleteVehicleModel() {
+  if (!selectedCatalogModel || !TOYOTA_MODEL_DATA[selectedCatalogModel]) {
+    return;
+  }
+
+  if (Object.keys(TOYOTA_MODEL_DATA).length <= 1) {
+    setMessage("ต้องมีอย่างน้อย 1 รุ่นรถในระบบ");
+    return;
+  }
+
+  const deletedModelName = selectedCatalogModel;
+  const deletedCount = TOYOTA_MODEL_DATA[deletedModelName]?.length ?? 0;
+
+  openAdminConfirmationModal(
+    `ยืนยันการลบรุ่นรถ\n\nรุ่นรถ: ${deletedModelName}\nรายการรุ่นย่อยที่จะถูกลบ: ${formatNumber(deletedCount)} รายการ`,
+    async () => {
+      delete TOYOTA_MODEL_DATA[deletedModelName];
+
+      if (hasCalculatorVehicleFields() && carModelInput.value.trim() === deletedModelName) {
+        carModelInput.value = "";
+        carSubmodelInput.value = "";
+        carPriceInput.value = "";
+      }
+
+      selectedCatalogModel = "";
+      await persistVehicleCatalogAndRefresh("ลบรุ่นรถแล้ว");
+    }
+  );
+}
+
+function addVehicleSubmodel() {
+  if (!selectedCatalogModel || !TOYOTA_MODEL_DATA[selectedCatalogModel]) {
+    setMessage("เลือกรุ่นรถก่อนเพิ่มรุ่นย่อย");
+    return;
+  }
+
+  const submodelName = newSubmodelNameInput.value.trim();
+  const submodelPrice = parseNumber(newSubmodelPriceInput.value);
+
+  if (!submodelName) {
+    setMessage("กรุณากรอกชื่อรุ่นย่อย");
+    return;
+  }
+
+  if (TOYOTA_MODEL_DATA[selectedCatalogModel].some((entry) => entry.name === submodelName)) {
+    setMessage("มีชื่อรุ่นย่อยนี้อยู่แล้วในรุ่นรถที่เลือก");
+    return;
+  }
+
+  openAdminConfirmationModal(
+    `ยืนยันการเพิ่มรุ่นย่อย\n\nรุ่นรถ: ${selectedCatalogModel}\nรุ่นย่อย: ${submodelName}\nราคา: ${formatNumber(submodelPrice)} บาท`,
+    async () => {
+      TOYOTA_MODEL_DATA[selectedCatalogModel].push({
+        name: submodelName,
+        price: Math.max(submodelPrice, 0)
+      });
+
+      newSubmodelNameInput.value = "";
+      newSubmodelPriceInput.value = "";
+      await persistVehicleCatalogAndRefresh("เพิ่มรุ่นย่อยแล้ว");
+    }
+  );
+}
+
+function updateVehicleSubmodel(originalSubmodelName, nextSubmodelName, nextPrice) {
+  const entries = TOYOTA_MODEL_DATA[selectedCatalogModel] ?? [];
+  const targetEntry = entries.find((entry) => entry.name === originalSubmodelName);
+
+  if (!targetEntry) {
+    return;
+  }
+
+  if (!nextSubmodelName) {
+    setMessage("กรุณากรอกชื่อรุ่นย่อย");
+    return;
+  }
+
+  if (nextSubmodelName !== originalSubmodelName && entries.some((entry) => entry.name === nextSubmodelName)) {
+    setMessage("มีชื่อรุ่นย่อยนี้อยู่แล้วในรุ่นรถที่เลือก");
+    return;
+  }
+
+  openAdminConfirmationModal(
+    `ยืนยันการบันทึกรุ่นย่อย\n\nรุ่นรถ: ${selectedCatalogModel}\nรุ่นย่อยเดิม: ${originalSubmodelName}\nรุ่นย่อยใหม่: ${nextSubmodelName}\nราคาใหม่: ${formatNumber(nextPrice)} บาท`,
+    async () => {
+      targetEntry.name = nextSubmodelName;
+      targetEntry.price = Math.max(nextPrice, 0);
+
+      if (
+        hasCalculatorVehicleFields() &&
+        carModelInput.value.trim() === selectedCatalogModel &&
+        carSubmodelInput.value.trim() === originalSubmodelName
+      ) {
+        carSubmodelInput.value = nextSubmodelName;
+      }
+
+      await persistVehicleCatalogAndRefresh("บันทึกรุ่นย่อยและราคาแล้ว");
+    }
+  );
+}
+
+function deleteVehicleSubmodel(submodelName) {
+  const entries = TOYOTA_MODEL_DATA[selectedCatalogModel] ?? [];
+  const nextEntries = entries.filter((entry) => entry.name !== submodelName);
+
+  if (nextEntries.length === entries.length) {
+    return;
+  }
+
+  if (nextEntries.length === 0) {
+    setMessage("ต้องมีอย่างน้อย 1 รุ่นย่อยต่อ 1 รุ่นรถ");
+    return;
+  }
+
+  openAdminConfirmationModal(
+    `ยืนยันการลบรุ่นย่อย\n\nรุ่นรถ: ${selectedCatalogModel}\nรุ่นย่อย: ${submodelName}`,
+    async () => {
+      TOYOTA_MODEL_DATA[selectedCatalogModel] = nextEntries;
+
+      if (
+        hasCalculatorVehicleFields() &&
+        carModelInput.value.trim() === selectedCatalogModel &&
+        carSubmodelInput.value.trim() === submodelName
+      ) {
+        carSubmodelInput.value = "";
+        carPriceInput.value = "";
+      }
+
+      await persistVehicleCatalogAndRefresh("ลบรุ่นย่อยแล้ว");
+    }
+  );
 }
 
 function getPriceWithColor() {
@@ -1044,8 +1889,12 @@ function handleFormattedNumericInput(event) {
 }
 
 function initializeCalculator() {
+  if (!(form instanceof HTMLFormElement)) {
+    return;
+  }
+
   accessoryModeToggleButton.dataset.mode = accessoryModeToggleButton.dataset.mode || "accessory";
-  populateCarModels();
+  refreshVehicleCatalogUI({ showSelectionMessage: false });
   renderSelectedGifts();
   toggleCalculationType();
   updateAccessoryModeUI();
@@ -1059,169 +1908,285 @@ function initializeCalculator() {
   }, { once: true });
 }
 
-calculationTypeSelect.addEventListener("change", () => {
-  if (isBalloonCalculationSelected()) {
-    accessoryModeToggleButton.dataset.mode = "accessory";
-  }
+function initializeVehicleCatalog() {
+  loadVehicleCatalogFromLocalStorage();
+  refreshVehicleCatalogUI({ showSelectionMessage: false });
+  loadVehicleCatalogFromFirebase();
 
-  toggleCalculationType();
-  updateAccessoryModeUI();
-  syncDownPaymentHint();
-  calculateLoan();
-});
+  window.addEventListener("firebase-gift-store-ready", () => {
+    loadVehicleCatalogFromFirebase();
+  }, { once: true });
 
-accessoryModeToggleButton.addEventListener("click", () => {
-  accessoryModeToggleButton.dataset.mode = isDiscountModeSelected() ? "accessory" : "discount";
-
-  if (downPaymentPercentSelect.value !== "custom") {
-    syncDownPaymentWithPercent();
-    return;
-  }
-
-  syncDownPaymentHint();
-  calculateLoan();
-});
-
-carModelInput.addEventListener("input", handleModelChange);
-carModelInput.addEventListener("change", handleModelChange);
-carSubmodelInput.addEventListener("input", handleSubmodelChange);
-carSubmodelInput.addEventListener("change", handleSubmodelChange);
-
-downPaymentPercentSelect.addEventListener("change", syncDownPaymentWithPercent);
-downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
-
-[
-  carPriceInput,
-  specialColorInput,
-  accessoryInput,
-  supportDiscountInput,
-  rvPercentageInput,
-  registrationFeeInput,
-  financeFeeInput,
-  bookingDepositInput,
-  extraTransferInput,
-  marginInput
-].forEach((input) => {
-  input.addEventListener("input", () => {
-    if (input === carPriceInput) {
-      setMessage("");
-    }
-
-    if (downPaymentPercentSelect.value !== "custom" && [carPriceInput, specialColorInput, accessoryInput].includes(input)) {
-      syncDownPaymentWithPercent();
+  window.addEventListener("storage", (event) => {
+    if (event.key !== VEHICLE_CATALOG_STORAGE_KEY) {
       return;
     }
 
-    calculateLoan();
+    loadVehicleCatalogFromLocalStorage();
+    refreshVehicleCatalogUI({ showSelectionMessage: false });
   });
 
-  input.addEventListener("blur", handleFormattedNumericInput);
+  window.addEventListener("vehicle-catalog-updated", () => {
+    loadVehicleCatalogFromLocalStorage();
+    refreshVehicleCatalogUI({ showSelectionMessage: false });
+  });
+}
+
+modelCreateForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  addVehicleModel();
 });
 
-interestRateInput.addEventListener("input", () => {
-  calculateLoan();
+modelEditForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  renameVehicleModel();
 });
 
-interestRateInput.addEventListener("blur", (event) => {
-  formatInterestRateInput(interestRateInput, interestRateInput.value);
-  calculateLoan();
+deleteModelButton?.addEventListener("click", () => {
+  deleteVehicleModel();
 });
 
-selectedGiftsContainer.addEventListener("input", (event) => {
-  const input = event.target;
-  if (!(input instanceof HTMLInputElement)) {
-    return;
-  }
-
-  const index = Number(input.dataset.giftIndex);
-  if (!Number.isInteger(index) || !selectedGifts[index]) {
-    return;
-  }
-
-  selectedGifts[index].value = input.value;
-  calculateLoan();
-  saveGiftState();
+submodelCreateForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  addVehicleSubmodel();
 });
 
-selectedGiftsContainer.addEventListener("click", (event) => {
+modelAdminList?.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) {
     return;
   }
 
-  const button = target.closest("[data-remove-gift-index]");
+  const button = target.closest("[data-select-model]");
   if (!(button instanceof HTMLElement)) {
     return;
   }
 
-  removeGiftByIndex(Number(button.dataset.removeGiftIndex));
+  selectedCatalogModel = button.dataset.selectModel ?? "";
+  renderVehicleCatalogManager();
 });
 
-selectedGiftsContainer.addEventListener("blur", (event) => {
-  const input = event.target;
-  if (!(input instanceof HTMLInputElement)) {
+submodelAdminList?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formElement = event.target;
+  if (!(formElement instanceof HTMLFormElement)) {
     return;
   }
 
-  const index = Number(input.dataset.giftIndex);
-  if (!Number.isInteger(index) || !selectedGifts[index]) {
+  const nameInput = formElement.querySelector('input[name="submodel-name"]');
+  const priceInput = formElement.querySelector('input[name="submodel-price"]');
+  if (!(nameInput instanceof HTMLInputElement) || !(priceInput instanceof HTMLInputElement)) {
     return;
   }
 
-  handleFormattedNumericInput(event);
-  selectedGifts[index].value = input.value;
-  calculateLoan();
-  saveGiftState();
-}, true);
+  updateVehicleSubmodel(
+    nameInput.dataset.originalSubmodel ?? "",
+    nameInput.value.trim(),
+    parseNumber(priceInput.value)
+  );
+});
 
-giftOptionsContainer.addEventListener("click", (event) => {
+submodelAdminList?.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) {
     return;
   }
 
-  const moveButton = target.closest("[data-move-option]");
-  if (moveButton instanceof HTMLElement) {
-    moveGiftOption(
-      moveButton.dataset.moveOption ?? "",
-      moveButton.dataset.direction ?? ""
-    );
+  const button = target.closest("[data-delete-submodel]");
+  if (!(button instanceof HTMLElement)) {
     return;
   }
 
-  const removeButton = target.closest("[data-remove-option]");
-  if (!(removeButton instanceof HTMLElement)) {
+  deleteVehicleSubmodel(button.dataset.deleteSubmodel ?? "");
+});
+
+newSubmodelPriceInput?.addEventListener("blur", handleFormattedNumericInput);
+submodelAdminList?.addEventListener("blur", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || target.name !== "submodel-price") {
     return;
   }
 
-  removeGiftOption(removeButton.dataset.removeOption ?? "");
-});
+  handleFormattedNumericInput(event);
+}, true);
 
-loanTermSelect.addEventListener("change", calculateLoan);
-loanTermSelect.addEventListener("change", toggleCalculationType);
-addGiftButton.addEventListener("click", openGiftModal);
-giftModalCloseButton.addEventListener("click", closeGiftModal);
-giftModalCancelButton.addEventListener("click", closeGiftModal);
-giftModalConfirmButton.addEventListener("click", syncSelectedGiftsFromModal);
-giftCustomAddButton.addEventListener("click", addGiftOption);
-giftCustomInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    addGiftOption();
+adminConfirmCloseButton?.addEventListener("click", closeAdminConfirmationModal);
+adminConfirmCancelButton?.addEventListener("click", closeAdminConfirmationModal);
+adminConfirmSubmitButton?.addEventListener("click", submitAdminConfirmation);
+adminConfirmModal?.addEventListener("click", (event) => {
+  if (event.target === adminConfirmModal) {
+    closeAdminConfirmationModal();
   }
 });
-giftModal.addEventListener("click", (event) => {
-  if (event.target === giftModal) {
-    closeGiftModal();
-  }
-});
+syncToyotaDataButton?.addEventListener("click", handleToyotaThailandSync);
 
-resetButton.addEventListener("click", () => {
-  resetFormState();
-});
+if (form instanceof HTMLFormElement) {
+  calculationTypeSelect.addEventListener("change", () => {
+    if (isBalloonCalculationSelected()) {
+      accessoryModeToggleButton.dataset.mode = "accessory";
+    }
 
-copySummaryButton.addEventListener("click", () => {
-  copySummaryText();
-});
+    toggleCalculationType();
+    updateAccessoryModeUI();
+    syncDownPaymentHint();
+    calculateLoan();
+  });
 
+  accessoryModeToggleButton.addEventListener("click", () => {
+    accessoryModeToggleButton.dataset.mode = isDiscountModeSelected() ? "accessory" : "discount";
+
+    if (downPaymentPercentSelect.value !== "custom") {
+      syncDownPaymentWithPercent();
+      return;
+    }
+
+    syncDownPaymentHint();
+    calculateLoan();
+  });
+
+  carModelInput.addEventListener("input", handleModelChange);
+  carModelInput.addEventListener("change", handleModelChange);
+  carSubmodelInput.addEventListener("input", handleSubmodelChange);
+  carSubmodelInput.addEventListener("change", handleSubmodelChange);
+
+  downPaymentPercentSelect.addEventListener("change", syncDownPaymentWithPercent);
+  downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
+
+  [
+    carPriceInput,
+    specialColorInput,
+    accessoryInput,
+    supportDiscountInput,
+    rvPercentageInput,
+    registrationFeeInput,
+    financeFeeInput,
+    bookingDepositInput,
+    extraTransferInput,
+    marginInput
+  ].forEach((input) => {
+    input.addEventListener("input", () => {
+      if (input === carPriceInput) {
+        setMessage("");
+      }
+
+      if (downPaymentPercentSelect.value !== "custom" && [carPriceInput, specialColorInput, accessoryInput].includes(input)) {
+        syncDownPaymentWithPercent();
+        return;
+      }
+
+      calculateLoan();
+    });
+
+    input.addEventListener("blur", handleFormattedNumericInput);
+  });
+
+  interestRateInput.addEventListener("input", () => {
+    calculateLoan();
+  });
+
+  interestRateInput.addEventListener("blur", () => {
+    formatInterestRateInput(interestRateInput, interestRateInput.value);
+    calculateLoan();
+  });
+
+  selectedGiftsContainer.addEventListener("input", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const index = Number(input.dataset.giftIndex);
+    if (!Number.isInteger(index) || !selectedGifts[index]) {
+      return;
+    }
+
+    selectedGifts[index].value = input.value;
+    calculateLoan();
+    saveGiftState();
+  });
+
+  selectedGiftsContainer.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const button = target.closest("[data-remove-gift-index]");
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    removeGiftByIndex(Number(button.dataset.removeGiftIndex));
+  });
+
+  selectedGiftsContainer.addEventListener("blur", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const index = Number(input.dataset.giftIndex);
+    if (!Number.isInteger(index) || !selectedGifts[index]) {
+      return;
+    }
+
+    handleFormattedNumericInput(event);
+    selectedGifts[index].value = input.value;
+    calculateLoan();
+    saveGiftState();
+  }, true);
+
+  giftOptionsContainer.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const moveButton = target.closest("[data-move-option]");
+    if (moveButton instanceof HTMLElement) {
+      moveGiftOption(
+        moveButton.dataset.moveOption ?? "",
+        moveButton.dataset.direction ?? ""
+      );
+      return;
+    }
+
+    const removeButton = target.closest("[data-remove-option]");
+    if (!(removeButton instanceof HTMLElement)) {
+      return;
+    }
+
+    removeGiftOption(removeButton.dataset.removeOption ?? "");
+  });
+
+  loanTermSelect.addEventListener("change", calculateLoan);
+  loanTermSelect.addEventListener("change", toggleCalculationType);
+  addGiftButton.addEventListener("click", openGiftModal);
+  giftModalCloseButton.addEventListener("click", closeGiftModal);
+  giftModalCancelButton.addEventListener("click", closeGiftModal);
+  giftModalConfirmButton.addEventListener("click", syncSelectedGiftsFromModal);
+  giftCustomAddButton.addEventListener("click", addGiftOption);
+  giftCustomInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addGiftOption();
+    }
+  });
+  giftModal.addEventListener("click", (event) => {
+    if (event.target === giftModal) {
+      closeGiftModal();
+    }
+  });
+
+  resetButton.addEventListener("click", () => {
+    resetFormState();
+  });
+
+  copySummaryButton.addEventListener("click", () => {
+    copySummaryText();
+  });
+}
+
+initializeVehicleCatalog();
 initializeCalculator();

@@ -12,6 +12,11 @@ export const firebaseGiftDocument = {
   document: "gifts"
 };
 
+export const firebaseVehicleCatalogDocument = {
+  collection: "appState",
+  document: "vehicleCatalog"
+};
+
 export function hasFirebaseConfig() {
   return Object.values(firebaseConfig).every((value) => typeof value === "string" && value.trim() !== "");
 }

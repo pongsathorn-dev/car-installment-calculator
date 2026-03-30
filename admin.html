@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการข้อมูลรุ่นรถและราคา</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="card hero">
+      <div>
+        <p class="eyebrow">Vehicle Catalog Admin</p>
+        <h1>จัดการข้อมูลรุ่นรถและราคา</h1>
+        <p class="intro">แก้ไขรายการรุ่นรถให้หน้าเสนอค่างวดใช้ข้อมูลล่าสุดทันที โดยแยกงานเพิ่มรุ่นรถ เลือกรุ่นที่ต้องการ และจัดการรุ่นย่อยไว้เป็นลำดับเดียวกัน</p>
+      </div>
+      <div class="hero-actions">
+        <a class="button-link" href="index.html">กลับหน้าเครื่องคิดคำนวณ</a>
+      </div>
+    </section>
+
+    <section class="card summary-card model-admin-card">
+      <section class="summary-block" aria-labelledby="vehicle-catalog-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="vehicle-catalog-heading">ตั้งค่ารายการรถในระบบ</h2>
+            <span>เพิ่ม ลบ และแก้ไขข้อมูลรุ่นรถ รุ่นย่อย และราคา แล้วหน้าเครื่องคิดจะใช้อัตโนมัติ</span>
+          </div>
+          <button type="button" id="sync-toyota-data-button" class="ghost-button" hidden>ดึงข้อมูลจาก Toyota Thailand</button>
+        </div>
+
+        <div class="model-admin-layout">
+          <div class="model-admin-panel">
+            <div class="admin-panel-heading">
+              <h3>รายการรุ่นรถ</h3>
+              <span>เลือกรุ่นเพื่อแก้ไขรายละเอียด</span>
+            </div>
+
+            <form id="model-create-form" class="admin-inline-form" autocomplete="off">
+              <label>
+                <span>เพิ่มรุ่นรถใหม่</span>
+                <input id="new-model-name" type="text" placeholder="เช่น Corolla Cross">
+              </label>
+              <button type="submit">เพิ่มรุ่นรถ</button>
+            </form>
+
+            <div id="model-admin-list" class="model-admin-list"></div>
+          </div>
+
+          <div class="model-admin-panel">
+            <div id="model-admin-empty" class="empty-state">เลือกรุ่นรถจากรายการด้านซ้ายเพื่อแก้ไขรายละเอียด</div>
+
+            <div id="model-admin-detail" class="model-admin-detail is-hidden">
+              <div class="admin-selected-model-card">
+                <span class="admin-selected-model-kicker">รุ่นรถที่กำลังแก้ไข</span>
+                <strong id="selected-model-title">-</strong>
+                <span id="selected-model-meta">มี 0 รุ่นย่อย</span>
+              </div>
+
+              <form id="model-edit-form" class="admin-inline-form" autocomplete="off">
+                <label>
+                  <span>ชื่อรุ่นรถ</span>
+                  <input id="edit-model-name" type="text" placeholder="แก้ไขชื่อรุ่นรถ">
+                </label>
+                <button type="submit">บันทึกชื่อรุ่นรถ</button>
+              </form>
+
+              <button type="button" id="delete-model-button" class="secondary-button">ลบรุ่นรถนี้</button>
+
+              <div class="admin-subsection-card">
+                <div class="admin-panel-heading">
+                  <h3>เพิ่มรุ่นย่อย</h3>
+                  <span>กรอกชื่อรุ่นย่อยและราคา แล้วกดเพิ่ม</span>
+                </div>
+
+                <form id="submodel-create-form" class="admin-grid-form" autocomplete="off">
+                  <label>
+                    <span>ชื่อรุ่นย่อย</span>
+                    <input id="new-submodel-name" type="text" placeholder="เช่น HEV Premium">
+                  </label>
+                  <label>
+                    <span>ราคา</span>
+                    <input id="new-submodel-price" type="text" inputmode="decimal" placeholder="เช่น 1094000">
+                  </label>
+                  <button type="submit">เพิ่มรุ่นย่อย</button>
+                </form>
+              </div>
+
+              <div class="admin-subsection-card">
+                <div class="admin-panel-heading">
+                  <h3>รายการรุ่นย่อย</h3>
+                  <span>แก้ไขชื่อหรือราคาแล้วกดบันทึกเป็นรายรายการ</span>
+                </div>
+
+                <div id="submodel-admin-list" class="submodel-admin-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p id="message" class="message" role="status"></p>
+      </section>
+    </section>
+  </main>
+
+  <div id="admin-confirm-modal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
+    <div class="modal-panel admin-confirm-panel">
+      <div class="modal-header">
+        <h2 id="admin-confirm-title">ยืนยันการทำรายการ</h2>
+        <button type="button" id="admin-confirm-close" class="icon-button" aria-label="ปิดหน้าต่าง">x</button>
+      </div>
+      <div class="admin-confirm-body">
+        <p id="admin-confirm-text">กรุณาตรวจสอบรายการก่อนยืนยัน</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="admin-confirm-cancel" class="secondary-button">ยกเลิก</button>
+        <button type="button" id="admin-confirm-submit">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-store.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
