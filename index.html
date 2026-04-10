@@ -31,32 +31,48 @@
 
         <label class="form-span-third">
           <span>ช่องทาง</span>
-          <input id="customer-channel" name="customer-channel" type="text" placeholder="เช่น Facebook / Line / โทรเข้า">
+          <select id="customer-channel" name="customer-channel">
+            <option value="">เลือกช่องทาง</option>
+            <option value="Walk in">Walk in</option>
+            <option value="Tiktok">Tiktok</option>
+            <option value="เพจสาขา">เพจสาขา</option>
+            <option value="Motor Show">Motor Show</option>
+            <option value="Phone">Phone</option>
+          </select>
         </label>
 
         <label class="form-span-full">
-          <span>ฤกษ์ออกรถ</span>
-          <input id="delivery-date" name="delivery-date" type="text" placeholder="ระบุวันหรือฤกษ์ออกรถ">
+          <span>รับรถ</span>
+          <input id="delivery-date" name="delivery-date" type="text" placeholder="ระบุวันรับรถ">
         </label>
 
         <label class="form-span-full">
           <span>วิธีคำนวณ</span>
           <select id="calculation-type" name="calculation-type">
-            <option value="standard">แบบปกติ</option>
+            <option value="standard">แคมเปญดอกเบี้ยพิเศษ</option>
             <option value="balloon" selected>แคมเปญสบายดี</option>
           </select>
         </label>
 
-        <label class="form-span-half">
+        <label class="form-span-third">
           <span>รุ่นรถ</span>
-          <input id="car-model" name="car-model" type="text" list="car-model-options" placeholder="พิมพ์หรือเลือก รุ่นรถ Toyota">
-          <datalist id="car-model-options"></datalist>
+          <select id="car-model" name="car-model">
+            <option value="">เลือกรุ่นรถ</option>
+          </select>
         </label>
 
-        <label class="form-span-half">
+        <label class="form-span-third">
           <span>รุ่นย่อย</span>
-          <input id="car-submodel" name="car-submodel" type="text" list="car-submodel-options" placeholder="พิมพ์หรือเลือก รุ่นย่อย">
-          <datalist id="car-submodel-options"></datalist>
+          <select id="car-submodel" name="car-submodel">
+            <option value="">เลือกรุ่นย่อย</option>
+          </select>
+        </label>
+
+        <label class="form-span-third">
+          <span>สีรถ</span>
+          <select id="car-color" name="car-color">
+            <option value="">เลือกสีรถ</option>
+          </select>
         </label>
 
         <label class="form-span-third">

@@ -180,9 +180,8 @@ const customerChannelInput = document.getElementById("customer-channel");
 const deliveryDateInput = document.getElementById("delivery-date");
 const calculationTypeSelect = document.getElementById("calculation-type");
 const carModelInput = document.getElementById("car-model");
-const carModelOptions = document.getElementById("car-model-options");
 const carSubmodelInput = document.getElementById("car-submodel");
-const carSubmodelOptions = document.getElementById("car-submodel-options");
+const carColorSelect = document.getElementById("car-color");
 const carPriceInput = document.getElementById("car-price");
 const specialColorInput = document.getElementById("special-color");
 const accessoryInput = document.getElementById("support-down-payment");
@@ -358,6 +357,37 @@ function formatInterestRateInput(input, value) {
   input.value = num.toFixed(2);
 }
 
+function normalizeColorName(value) {
+  return String(value ?? "")
+    .replace(/^[-*•\d.)\s]+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeColorList(colors) {
+  if (!Array.isArray(colors)) {
+    return [];
+  }
+
+  const seenColors = new Set();
+  return colors.reduce((result, color) => {
+    const normalizedColor = normalizeColorName(color);
+    if (!normalizedColor) {
+      return result;
+    }
+
+    const lookupKey = normalizedColor.toLocaleLowerCase("th");
+    if (seenColors.has(lookupKey)) {
+      return result;
+    }
+
+    seenColors.add(lookupKey);
+    result.push(normalizedColor);
+    return result;
+  }, []);
+}
+
+
 function isBalloonCalculationSelected() {
   return calculationTypeSelect.value === "balloon";
 }
@@ -428,8 +458,8 @@ function setMessage(text = "") {
 
 function hasCalculatorVehicleFields() {
   return (
-    carModelInput instanceof HTMLInputElement &&
-    carSubmodelInput instanceof HTMLInputElement &&
+    carModelInput instanceof HTMLSelectElement &&
+    (carSubmodelInput instanceof HTMLInputElement || carSubmodelInput instanceof HTMLSelectElement) &&
     carPriceInput instanceof HTMLInputElement
   );
 }
@@ -757,7 +787,8 @@ function buildSanitizedVehicleCatalog(source) {
       usedSubmodelNames.add(submodelName);
       sanitizedEntries.push({
         name: submodelName,
-        price: Math.max(parseNumber(entry?.price), 0)
+        price: Math.max(parseNumber(entry?.price), 0),
+        colors: normalizeColorList(entry?.colors ?? [])
       });
     });
 
@@ -779,7 +810,8 @@ function replaceToyotaModelData(nextCatalog) {
   Object.entries(sanitizedCatalog).forEach(([modelName, entries]) => {
     TOYOTA_MODEL_DATA[modelName] = entries.map((entry) => ({
       name: entry.name,
-      price: entry.price
+      price: entry.price,
+      colors: normalizeColorList(entry.colors ?? [])
     }));
   });
 }
@@ -956,10 +988,9 @@ function renderVehicleCatalogManager() {
 
 function refreshVehicleCatalogUI(options = {}) {
   const hasCalculatorCatalogFields = (
-    carModelInput instanceof HTMLInputElement &&
-    carSubmodelInput instanceof HTMLInputElement &&
-    carModelOptions instanceof HTMLDataListElement &&
-    carSubmodelOptions instanceof HTMLDataListElement &&
+    carModelInput instanceof HTMLSelectElement &&
+    carSubmodelInput instanceof HTMLSelectElement &&
+    carColorSelect instanceof HTMLSelectElement &&
     carPriceInput instanceof HTMLInputElement
   );
 
@@ -971,13 +1002,16 @@ function refreshVehicleCatalogUI(options = {}) {
   const showSelectionMessage = options.showSelectionMessage ?? true;
   const previousModel = carModelInput.value.trim();
   const previousSubmodel = carSubmodelInput.value.trim();
+  const previousColor = carColorSelect.value;
 
   populateCarModels();
 
   if (!previousModel || !TOYOTA_MODEL_DATA[previousModel]) {
     carModelInput.value = "";
     carSubmodelInput.value = "";
-    carSubmodelOptions.innerHTML = "";
+    carSubmodelInput.innerHTML = '<option value="">เลือกรุ่นย่อย</option>';
+    carColorSelect.innerHTML = '<option value="">เลือกสีรถ</option>';
+    carColorSelect.value = "";
     if (previousModel) {
       carPriceInput.value = "";
     }
@@ -1001,6 +1035,11 @@ function refreshVehicleCatalogUI(options = {}) {
       if (showSelectionMessage) {
         setMessage("รุ่นย่อยที่เลือกถูกอัปเดตแล้ว กรุณาเลือกใหม่");
       }
+    }
+
+    populateCarColors();
+    if (normalizeColorList(getSelectedSubmodelEntry()?.colors ?? []).includes(previousColor)) {
+      carColorSelect.value = previousColor;
     }
   }
 
@@ -1037,6 +1076,7 @@ function buildCalculatorFormState() {
     calculationType: calculationTypeSelect?.value ?? "balloon",
     carModel: carModelInput?.value ?? "",
     carSubmodel: carSubmodelInput?.value ?? "",
+    carColor: carColorSelect?.value ?? "",
     carPrice: carPriceInput?.value ?? "",
     specialColor: specialColorInput?.value ?? "",
     accessoryValue: accessoryInput?.value ?? "",
@@ -1097,6 +1137,7 @@ function loadCalculatorFormState() {
     calculationTypeSelect.value = String(state.calculationType ?? "balloon");
     carModelInput.value = String(state.carModel ?? "");
     carSubmodelInput.value = String(state.carSubmodel ?? "");
+    const savedCarColor = String(state.carColor ?? "");
     carPriceInput.value = String(state.carPrice ?? "");
     specialColorInput.value = String(state.specialColor ?? "");
     accessoryInput.value = String(state.accessoryValue ?? "");
@@ -1123,6 +1164,11 @@ function loadCalculatorFormState() {
       : [];
 
     populateCarSubmodels();
+    populateCarColors();
+    if (carColorSelect instanceof HTMLSelectElement) {
+      const availableColors = normalizeColorList(getSelectedSubmodelEntry()?.colors ?? []);
+      carColorSelect.value = availableColors.includes(savedCarColor) ? savedCarColor : carColorSelect.value;
+    }
     renderSelectedGifts();
     return true;
   } catch (error) {
@@ -1185,7 +1231,8 @@ function addVehicleModel() {
     async () => {
       TOYOTA_MODEL_DATA[modelName] = [{
         name: "รุ่นย่อยใหม่",
-        price: 0
+        price: 0,
+        colors: []
       }];
       selectedCatalogModel = modelName;
       newModelNameInput.value = "";
@@ -1215,7 +1262,10 @@ function renameVehicleModel() {
   openAdminConfirmationModal(
     `ยืนยันการบันทึกชื่อรุ่นรถ\n\nจาก: ${currentModelName}\nเป็น: ${nextModelName}`,
     async () => {
-      const currentEntries = TOYOTA_MODEL_DATA[currentModelName].map((entry) => ({ ...entry }));
+      const currentEntries = TOYOTA_MODEL_DATA[currentModelName].map((entry) => ({
+        ...entry,
+        colors: normalizeColorList(entry.colors ?? [])
+      }));
 
       delete TOYOTA_MODEL_DATA[currentModelName];
       TOYOTA_MODEL_DATA[nextModelName] = currentEntries;
@@ -1251,6 +1301,10 @@ function deleteVehicleModel() {
       if (hasCalculatorVehicleFields() && carModelInput.value.trim() === deletedModelName) {
         carModelInput.value = "";
         carSubmodelInput.value = "";
+        if (carColorSelect instanceof HTMLSelectElement) {
+          carColorSelect.innerHTML = '<option value="">เลือกสีรถ</option>';
+          carColorSelect.value = "";
+        }
         carPriceInput.value = "";
       }
 
@@ -1284,7 +1338,8 @@ function addVehicleSubmodel() {
     async () => {
       TOYOTA_MODEL_DATA[selectedCatalogModel].push({
         name: submodelName,
-        price: Math.max(submodelPrice, 0)
+        price: Math.max(submodelPrice, 0),
+        colors: []
       });
 
       newSubmodelNameInput.value = "";
@@ -1317,6 +1372,7 @@ function updateVehicleSubmodel(originalSubmodelName, nextSubmodelName, nextPrice
     async () => {
       targetEntry.name = nextSubmodelName;
       targetEntry.price = Math.max(nextPrice, 0);
+      targetEntry.colors = normalizeColorList(targetEntry.colors ?? []);
 
       if (
         hasCalculatorVehicleFields() &&
@@ -1355,6 +1411,10 @@ function deleteVehicleSubmodel(submodelName) {
         carSubmodelInput.value.trim() === submodelName
       ) {
         carSubmodelInput.value = "";
+        if (carColorSelect instanceof HTMLSelectElement) {
+          carColorSelect.innerHTML = '<option value="">เลือกสีรถ</option>';
+          carColorSelect.value = "";
+        }
         carPriceInput.value = "";
       }
 
@@ -1378,16 +1438,67 @@ function getSelectedModelEntries() {
   return TOYOTA_MODEL_DATA[carModelInput.value.trim()] ?? [];
 }
 
+function getSelectedSubmodelEntry() {
+  const selectedSubmodel = carSubmodelInput.value.trim();
+  return getSelectedModelEntries().find((entry) => entry.name === selectedSubmodel) ?? null;
+}
+
 function populateCarModels() {
+  if (!(carModelInput instanceof HTMLSelectElement)) {
+    return;
+  }
+
   const modelNames = Object.keys(TOYOTA_MODEL_DATA).sort((left, right) => left.localeCompare(right, "th"));
-  carModelOptions.innerHTML = modelNames.map((model) => `<option value="${model}"></option>`).join("");
+  const previousModel = carModelInput.value;
+
+  carModelInput.innerHTML = [
+    '<option value="">เลือกรุ่นรถ</option>',
+    ...modelNames.map((model) => `<option value="${escapeHtml(model)}">${escapeHtml(model)}</option>`)
+  ].join("");
+
+  if (modelNames.includes(previousModel)) {
+    carModelInput.value = previousModel;
+  }
 }
 
 function populateCarSubmodels() {
+  if (!(carSubmodelInput instanceof HTMLSelectElement)) {
+    return;
+  }
+
   const entries = getSelectedModelEntries();
-  carSubmodelOptions.innerHTML = entries
-    .map((entry) => `<option value="${entry.name}"></option>`)
-    .join("");
+  const previousSubmodel = carSubmodelInput.value;
+
+  carSubmodelInput.innerHTML = [
+    '<option value="">เลือกรุ่นย่อย</option>',
+    ...entries.map((entry) => `<option value="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</option>`)
+  ].join("");
+
+  if (entries.some((entry) => entry.name === previousSubmodel)) {
+    carSubmodelInput.value = previousSubmodel;
+  }
+}
+
+function populateCarColors() {
+  if (!(carColorSelect instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  const selectedEntry = getSelectedSubmodelEntry();
+  const colors = normalizeColorList(selectedEntry?.colors ?? []);
+  const previousColor = carColorSelect.value;
+
+  carColorSelect.innerHTML = [
+    '<option value="">เลือกสีรถ</option>',
+    ...colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`)
+  ].join("");
+
+  if (colors.includes(previousColor)) {
+    carColorSelect.value = previousColor;
+    return;
+  }
+
+  carColorSelect.value = colors.length === 1 ? colors[0] : "";
 }
 
 function applySelectedSubmodelPrice(options = {}) {
@@ -1397,10 +1508,12 @@ function applySelectedSubmodelPrice(options = {}) {
   const matchedEntry = entries.find((entry) => entry.name === selectedSubmodel);
 
   if (!matchedEntry) {
+    populateCarColors();
     return false;
   }
 
   formatInputValue(carPriceInput, matchedEntry.price);
+  populateCarColors();
 
   if (options.showMessage !== false) {
     setMessage(autoPriceNote);
@@ -1809,6 +1922,7 @@ function buildSummaryText() {
   const deliveryDate = deliveryDateInput.value.trim();
   const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
   const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
+  const carColor = carColorSelect instanceof HTMLSelectElement ? carColorSelect.value.trim() : "";
   const headline = modelText || "รุ่นรถที่เลือก";
   const carPrice = parseNumber(carPriceInput.value);
   const specialColor = parseNumber(specialColorInput.value);
@@ -1827,7 +1941,7 @@ function buildSummaryText() {
   const hasBookingDeposit = bookingDepositInput.value.trim() !== "";
   const hasExtraTransfer = extraTransferInput.value.trim() !== "";
   const adjustmentLine = summary.isDiscountMode
-    ? `ส่วนลด ${formatSummaryNumber(summary.discountAmount)} บาท`
+    ? `💰 ส่วนลด ${formatSummaryNumber(summary.discountAmount)} บาท`
     : `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`;
   const vatBase = summary.accessoryAmount + summary.supportDiscount;
 
@@ -1844,13 +1958,14 @@ function buildSummaryText() {
     customerName ? `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨` : "",
     customerPhone ? `📞 โทร: ${customerPhone}` : "",
     customerChannel ? `📍 ช่องทาง: ${customerChannel}` : "",
-    deliveryDate ? `📆 ฤกษ์ออกรถ: ${deliveryDate}` : ""
+    deliveryDate ? `📆 รับรถ: ${deliveryDate}` : ""
   ].filter(Boolean);
 
   return [
     ...customerLines,
     ...(customerLines.length > 0 ? [""] : []),
     `🚗 ${headline} 💨`,
+    ...(carColor ? [`🎨 สีรถ ${carColor}`] : []),
     `(🌼 ${campaignLabel} 🌼)`,
     `💵 ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
     ...(hasSpecialColor ? [`บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`] : []),
@@ -1866,18 +1981,18 @@ function buildSummaryText() {
     giftsText,
     "",
     "✨🎀 ค่าใช้จ่ายวันรับรถ 🎀✨",
-    `1. เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
+    `1. 🌟เงินดาวน์ ${formatSummaryNumber(summary.downPayment)} บาท`,
     ...(!summary.isDiscountMode && hasAdjustment ? [`บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`] : []),
     ...(!summary.isDiscountMode && hasSupportDiscount ? [`ส่วนลดช่วยดาวน์ ${formatSummaryNumber(summary.supportDiscount)} บาท`] : []),
     ...(!summary.isDiscountMode ? [`= ${formatSummaryNumber(summary.daySubtotal)} บาท`] : []),
-    ...(hasRegistrationFee ? [`2. ค่าจดทะเบียน = ${formatSummaryNumber(summary.registrationFee)} บาท`] : []),
-    `3. ค่ามัดจำป้ายแดง = ${formatSummaryNumber(summary.redPlateDeposit)} บาท (ได้คืน)`,
+    ...(hasRegistrationFee ? [`2. 📘ค่าจดทะเบียน = ${formatSummaryNumber(summary.registrationFee)} บาท`] : []),
+    `3. 📕ค่ามัดจำป้ายแดง = ${formatSummaryNumber(summary.redPlateDeposit)} บาท (ได้คืน)`,
     ...(hasFinanceFee ? [`4. ค่าธรรมเนียมไฟแนนซ์ = ${formatSummaryNumber(summary.financeFee)} บาท`] : []),
     ...(!summary.isDiscountMode && vatBase > 0 ? [`5. VAT 3% (${formatSummaryNumber(vatBase)}) = ${formatSummaryNumber(summary.vatAmount)} บาท`] : []),
     `รวมค่าใช้จ่ายออกรถ = ${formatSummaryNumber(summary.driveAwayTotal)} บาท`,
-    ...(hasBookingDeposit ? [`หักเงินจอง = ${formatSummaryNumber(summary.bookingDeposit)} บาท`] : []),
+    ...(hasBookingDeposit ? [`📝 หักเงินจอง = ${formatSummaryNumber(summary.bookingDeposit)} บาท`] : []),
     ...(hasExtraTransfer ? [`ผ่านไฟแนนซ์ลูกค้าโอนเพิ่ม ${formatSummaryNumber(summary.extraTransfer)} บาท`] : []),
-    `เหลือยอดชำระ = ${formatSummaryNumber(summary.remainingBalance)} บาท`
+    `✨💖 เหลือยอดชำระ = ${formatSummaryNumber(summary.remainingBalance)} บาท 💖✨`
   ].join("\n");
 }
 
@@ -1912,7 +2027,13 @@ function resetFormState() {
 
   carModelInput.value = "";
   carSubmodelInput.value = "";
-  carSubmodelOptions.innerHTML = "";
+  if (carSubmodelInput instanceof HTMLSelectElement) {
+    carSubmodelInput.innerHTML = '<option value="">เลือกรุ่นย่อย</option>';
+  }
+  if (carColorSelect instanceof HTMLSelectElement) {
+    carColorSelect.innerHTML = '<option value="">เลือกสีรถ</option>';
+    carColorSelect.value = "";
+  }
   customerNameInput.value = "";
   customerPhoneInput.value = "";
   customerChannelInput.value = "";
@@ -1950,14 +2071,16 @@ function resetFormState() {
   clearCalculatorFormState();
 }
 
-function handleModelChange() {
+async function handleModelChange() {
   populateCarSubmodels();
+  populateCarColors();
 
   const entries = getSelectedModelEntries();
   const hasMatchingSubmodel = entries.some((entry) => entry.name === carSubmodelInput.value.trim());
 
   if (!hasMatchingSubmodel) {
     carSubmodelInput.value = "";
+    populateCarColors();
   }
 
   if (entries.length === 1) {
@@ -1984,7 +2107,7 @@ function handleModelChange() {
   saveCalculatorFormState();
 }
 
-function handleSubmodelChange() {
+async function handleSubmodelChange() {
   const applied = applySelectedSubmodelPrice();
 
   if (!applied && carSubmodelInput.value.trim()) {
@@ -2172,10 +2295,9 @@ if (form instanceof HTMLFormElement) {
     saveCalculatorFormState();
   });
 
-  carModelInput.addEventListener("input", handleModelChange);
   carModelInput.addEventListener("change", handleModelChange);
-  carSubmodelInput.addEventListener("input", handleSubmodelChange);
   carSubmodelInput.addEventListener("change", handleSubmodelChange);
+  carColorSelect?.addEventListener("change", saveCalculatorFormState);
 
   downPaymentPercentSelect.addEventListener("change", syncDownPaymentWithPercent);
   downPaymentInput.addEventListener("input", handleManualDownPaymentChange);
@@ -2336,6 +2458,7 @@ if (form instanceof HTMLFormElement) {
     calculationTypeSelect,
     carModelInput,
     carSubmodelInput,
+    carColorSelect,
     downPaymentPercentSelect
   ].forEach((input) => {
     input?.addEventListener("input", saveCalculatorFormState);
