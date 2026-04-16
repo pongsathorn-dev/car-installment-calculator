@@ -150,7 +150,22 @@
 };
 const DEFAULT_TOYOTA_MODEL_DATA = JSON.parse(JSON.stringify(TOYOTA_MODEL_DATA));
 const VEHICLE_CATALOG_STORAGE_KEY = "car-installment-vehicle-catalog";
+const OPTION_LISTS_STORAGE_KEY = "car-installment-option-lists";
 const CALCULATOR_FORM_STORAGE_KEY = "car-installment-calculator-form-state";
+const DEFAULT_CUSTOMER_CHANNEL_OPTIONS = [
+  "Walk in",
+  "Tiktok",
+  "เพจสาขา",
+  "Motor Show",
+  "Phone"
+];
+const DEFAULT_FINANCE_PROVIDER_OPTIONS = [
+  "FIN",
+  "TLT",
+  "TLT ( Smart Loan )",
+  "SCB",
+  "KBANK"
+];
 
 const form = document.getElementById("loan-form");
 const modelCreateForm = document.getElementById("model-create-form");
@@ -167,6 +182,14 @@ const submodelCreateForm = document.getElementById("submodel-create-form");
 const newSubmodelNameInput = document.getElementById("new-submodel-name");
 const newSubmodelPriceInput = document.getElementById("new-submodel-price");
 const submodelAdminList = document.getElementById("submodel-admin-list");
+const channelCreateForm = document.getElementById("channel-create-form");
+const newChannelNameInput = document.getElementById("new-channel-name");
+const channelAdminList = document.getElementById("channel-admin-list");
+const financeCreateForm = document.getElementById("finance-create-form");
+const newFinanceNameInput = document.getElementById("new-finance-name");
+const financeAdminList = document.getElementById("finance-admin-list");
+const adminTabButtons = Array.from(document.querySelectorAll("[data-admin-tab]"));
+const adminTabPanels = Array.from(document.querySelectorAll("[data-admin-panel]"));
 const adminConfirmModal = document.getElementById("admin-confirm-modal");
 const adminConfirmTitle = document.getElementById("admin-confirm-title");
 const adminConfirmText = document.getElementById("admin-confirm-text");
@@ -262,6 +285,8 @@ const GIFT_OPTIONS = [
 ];
 let selectedGifts = [];
 let giftOptions = [...GIFT_OPTIONS];
+let customerChannelOptions = [...DEFAULT_CUSTOMER_CHANNEL_OPTIONS];
+let financeProviderOptions = [...DEFAULT_FINANCE_PROVIDER_OPTIONS];
 let selectedCatalogModel = "";
 let pendingAdminConfirmationAction = null;
 let isSubmittingAdminConfirmation = false;
@@ -456,6 +481,31 @@ function setMessage(text = "") {
   if (message instanceof HTMLElement) {
     message.textContent = text;
   }
+}
+
+function setActiveAdminTab(tabName) {
+  adminTabButtons.forEach((button) => {
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    const isActive = button.dataset.adminTab === tabName;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+    if (button instanceof HTMLButtonElement) {
+      button.type = "button";
+    }
+  });
+
+  adminTabPanels.forEach((panel) => {
+    if (!(panel instanceof HTMLElement)) {
+      return;
+    }
+
+    const isActive = panel.dataset.adminPanel === tabName;
+    panel.classList.toggle("is-hidden", !isActive);
+    panel.hidden = !isActive;
+  });
 }
 
 function hasCalculatorVehicleFields() {
@@ -754,6 +804,10 @@ function cloneModelCatalog(data) {
   return JSON.parse(JSON.stringify(data));
 }
 
+function cloneOptionList(items) {
+  return JSON.parse(JSON.stringify(items));
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -761,6 +815,290 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function buildSanitizedOptionList(source, fallbackList) {
+  const rawItems = Array.isArray(source) ? source : fallbackList;
+  const seenValues = new Set();
+  const sanitizedList = [];
+
+  rawItems.forEach((item) => {
+    const normalizedValue = String(item ?? "").trim();
+    if (!normalizedValue) {
+      return;
+    }
+
+    const lookupKey = normalizedValue.toLocaleLowerCase("th");
+    if (seenValues.has(lookupKey)) {
+      return;
+    }
+
+    seenValues.add(lookupKey);
+    sanitizedList.push(normalizedValue);
+  });
+
+  return sanitizedList.length > 0 ? sanitizedList : [...fallbackList];
+}
+
+function replaceOptionLists(source) {
+  customerChannelOptions = buildSanitizedOptionList(
+    source?.customerChannels,
+    DEFAULT_CUSTOMER_CHANNEL_OPTIONS
+  );
+  financeProviderOptions = buildSanitizedOptionList(
+    source?.financeProviders,
+    DEFAULT_FINANCE_PROVIDER_OPTIONS
+  );
+}
+
+function buildOptionListsState() {
+  return {
+    customerChannels: cloneOptionList(customerChannelOptions),
+    financeProviders: cloneOptionList(financeProviderOptions)
+  };
+}
+
+function loadOptionListsFromLocalStorage() {
+  try {
+    const storedValue = window.localStorage.getItem(OPTION_LISTS_STORAGE_KEY);
+    if (!storedValue) {
+      return false;
+    }
+
+    const parsedValue = JSON.parse(storedValue);
+    replaceOptionLists(parsedValue);
+    return true;
+  } catch (error) {
+    console.error("Failed to load option lists from localStorage:", error);
+    return false;
+  }
+}
+
+function saveOptionListsToLocalStorage() {
+  try {
+    window.localStorage.setItem(
+      OPTION_LISTS_STORAGE_KEY,
+      JSON.stringify(buildOptionListsState())
+    );
+  } catch (error) {
+    console.error("Failed to save option lists to localStorage:", error);
+  }
+}
+
+async function saveOptionListsState() {
+  saveOptionListsToLocalStorage();
+  window.dispatchEvent(new CustomEvent("option-lists-updated"));
+
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (firebaseGiftStore?.saveOptionLists) {
+    await firebaseGiftStore.saveOptionLists(buildOptionListsState());
+  }
+}
+
+async function loadOptionListsFromFirebase() {
+  const firebaseGiftStore = window.firebaseGiftStore;
+  if (!firebaseGiftStore?.loadOptionLists) {
+    return;
+  }
+
+  try {
+    const remoteState = await firebaseGiftStore.loadOptionLists();
+    if (!remoteState) {
+      return;
+    }
+
+    replaceOptionLists(remoteState);
+    saveOptionListsToLocalStorage();
+    refreshOptionListsUI();
+  } catch (error) {
+    console.error("Failed to load option lists from Firebase:", error);
+  }
+}
+
+function populateSelectOptions(selectElement, items, placeholder) {
+  if (!(selectElement instanceof HTMLSelectElement)) {
+    return true;
+  }
+
+  const previousValue = selectElement.value;
+  selectElement.innerHTML = [
+    `<option value="">${escapeHtml(placeholder)}</option>`,
+    ...items.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`)
+  ].join("");
+
+  if (items.includes(previousValue)) {
+    selectElement.value = previousValue;
+    return true;
+  } else {
+    selectElement.value = "";
+    return previousValue === "";
+  }
+}
+
+function renderOptionListManager(listElement, options, config) {
+  if (!(listElement instanceof HTMLElement)) {
+    return;
+  }
+
+  listElement.innerHTML = options.length === 0
+    ? `<div class="empty-state">ยังไม่มีรายการ${escapeHtml(config.itemLabel)}</div>`
+    : options.map((item) => `
+      <form
+        class="option-admin-row"
+        data-option-form="${escapeHtml(config.key)}"
+        data-original-option="${escapeHtml(item)}"
+        autocomplete="off"
+      >
+        <label>
+          <span>${escapeHtml(config.itemLabel)}</span>
+          <input
+            type="text"
+            name="option-name"
+            value="${escapeHtml(item)}"
+            data-original-option="${escapeHtml(item)}"
+          >
+        </label>
+        <div class="option-admin-actions">
+          <button type="submit">บันทึก</button>
+          <button
+            type="button"
+            class="secondary-button"
+            data-delete-option="${escapeHtml(config.key)}"
+            data-option-value="${escapeHtml(item)}"
+          >ลบ</button>
+        </div>
+      </form>
+    `).join("");
+}
+
+function refreshOptionListsUI() {
+  const channelSelectionRetained = populateSelectOptions(customerChannelInput, customerChannelOptions, "เลือกช่องทาง");
+  const financeSelectionRetained = populateSelectOptions(financeProviderInput, financeProviderOptions, "เลือก Finance");
+
+  renderOptionListManager(channelAdminList, customerChannelOptions, {
+    key: "customerChannels",
+    itemLabel: "ช่องทาง"
+  });
+  renderOptionListManager(financeAdminList, financeProviderOptions, {
+    key: "financeProviders",
+    itemLabel: "Finance"
+  });
+
+  if (form instanceof HTMLFormElement && (!channelSelectionRetained || !financeSelectionRetained)) {
+    saveCalculatorFormState();
+  }
+}
+
+async function persistOptionListsAndRefresh(successMessage) {
+  refreshOptionListsUI();
+
+  try {
+    await saveOptionListsState();
+    refreshOptionListsUI();
+    if (typeof successMessage === "string" && successMessage.trim()) {
+      setMessage(successMessage);
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to persist option lists:", error);
+    setMessage("บันทึกรายการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    loadOptionListsFromLocalStorage();
+    refreshOptionListsUI();
+    return false;
+  }
+}
+
+function getOptionListByKey(key) {
+  if (key === "customerChannels") {
+    return customerChannelOptions;
+  }
+  if (key === "financeProviders") {
+    return financeProviderOptions;
+  }
+  return null;
+}
+
+async function addOptionListItem(key, rawValue) {
+  const optionList = getOptionListByKey(key);
+  if (!Array.isArray(optionList)) {
+    return false;
+  }
+
+  const nextValue = String(rawValue ?? "").trim();
+  if (!nextValue) {
+    setMessage("กรุณากรอกรายการที่ต้องการเพิ่ม");
+    return false;
+  }
+
+  const hasDuplicate = optionList.some((item) => item.toLocaleLowerCase("th") === nextValue.toLocaleLowerCase("th"));
+  if (hasDuplicate) {
+    setMessage("มีรายการนี้อยู่แล้ว");
+    return false;
+  }
+
+  optionList.push(nextValue);
+  return persistOptionListsAndRefresh(`เพิ่มรายการ${key === "customerChannels" ? "ช่องทาง" : "Finance"}แล้ว`);
+}
+
+async function updateOptionListItem(key, originalValue, rawNextValue) {
+  const optionList = getOptionListByKey(key);
+  if (!Array.isArray(optionList)) {
+    return;
+  }
+
+  const normalizedOriginalValue = String(originalValue ?? "").trim();
+  const nextValue = String(rawNextValue ?? "").trim();
+  if (!normalizedOriginalValue || !nextValue) {
+    setMessage("กรุณากรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  const targetIndex = optionList.findIndex((item) => item === normalizedOriginalValue);
+  if (targetIndex < 0) {
+    setMessage("ไม่พบรายการที่ต้องการแก้ไข");
+    return;
+  }
+
+  const hasDuplicate = optionList.some((item, index) => {
+    return index !== targetIndex && item.toLocaleLowerCase("th") === nextValue.toLocaleLowerCase("th");
+  });
+  if (hasDuplicate) {
+    setMessage("มีรายการนี้อยู่แล้ว");
+    return;
+  }
+
+  optionList[targetIndex] = nextValue;
+  await persistOptionListsAndRefresh(`บันทึกรายการ${key === "customerChannels" ? "ช่องทาง" : "Finance"}แล้ว`);
+}
+
+function deleteOptionListItem(key, value) {
+  const optionList = getOptionListByKey(key);
+  if (!Array.isArray(optionList)) {
+    return;
+  }
+
+  const normalizedValue = String(value ?? "").trim();
+  if (!normalizedValue) {
+    return;
+  }
+
+  openAdminConfirmationModal(
+    `ยืนยันการลบรายการ "${normalizedValue}"`,
+    async () => {
+      const targetIndex = optionList.findIndex((item) => item === normalizedValue);
+      if (targetIndex < 0) {
+        setMessage("ไม่พบรายการที่ต้องการลบ");
+        return;
+      }
+
+      optionList.splice(targetIndex, 1);
+      await persistOptionListsAndRefresh(`ลบรายการ${key === "customerChannels" ? "ช่องทาง" : "Finance"}แล้ว`);
+    },
+    {
+      title: "ยืนยันการลบรายการ",
+      confirmLabel: "ยืนยันลบ"
+    }
+  );
 }
 
 function buildSanitizedVehicleCatalog(source) {
@@ -2229,6 +2567,30 @@ function initializeCalculator() {
   }, { once: true });
 }
 
+function initializeCustomOptionLists() {
+  loadOptionListsFromLocalStorage();
+  refreshOptionListsUI();
+  loadOptionListsFromFirebase();
+
+  window.addEventListener("firebase-gift-store-ready", () => {
+    loadOptionListsFromFirebase();
+  }, { once: true });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key !== OPTION_LISTS_STORAGE_KEY) {
+      return;
+    }
+
+    loadOptionListsFromLocalStorage();
+    refreshOptionListsUI();
+  });
+
+  window.addEventListener("option-lists-updated", () => {
+    loadOptionListsFromLocalStorage();
+    refreshOptionListsUI();
+  });
+}
+
 function initializeVehicleCatalog() {
   loadVehicleCatalogFromLocalStorage();
   refreshVehicleCatalogUI({ showSelectionMessage: false });
@@ -2270,6 +2632,22 @@ deleteModelButton?.addEventListener("click", () => {
 submodelCreateForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   addVehicleSubmodel();
+});
+
+channelCreateForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const wasAdded = await addOptionListItem("customerChannels", newChannelNameInput?.value ?? "");
+  if (wasAdded && newChannelNameInput instanceof HTMLInputElement) {
+    newChannelNameInput.value = "";
+  }
+});
+
+financeCreateForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const wasAdded = await addOptionListItem("financeProviders", newFinanceNameInput?.value ?? "");
+  if (wasAdded && newFinanceNameInput instanceof HTMLInputElement) {
+    newFinanceNameInput.value = "";
+  }
 });
 
 modelAdminList?.addEventListener("click", (event) => {
@@ -2322,6 +2700,80 @@ submodelAdminList?.addEventListener("click", (event) => {
   deleteVehicleSubmodel(button.dataset.deleteSubmodel ?? "");
 });
 
+channelAdminList?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const formElement = event.target;
+  if (!(formElement instanceof HTMLFormElement)) {
+    return;
+  }
+
+  const nameInput = formElement.querySelector('input[name="option-name"]');
+  if (!(nameInput instanceof HTMLInputElement)) {
+    return;
+  }
+
+  await updateOptionListItem(
+    "customerChannels",
+    nameInput.dataset.originalOption ?? "",
+    nameInput.value.trim()
+  );
+});
+
+financeAdminList?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const formElement = event.target;
+  if (!(formElement instanceof HTMLFormElement)) {
+    return;
+  }
+
+  const nameInput = formElement.querySelector('input[name="option-name"]');
+  if (!(nameInput instanceof HTMLInputElement)) {
+    return;
+  }
+
+  await updateOptionListItem(
+    "financeProviders",
+    nameInput.dataset.originalOption ?? "",
+    nameInput.value.trim()
+  );
+});
+
+channelAdminList?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const button = target.closest("[data-delete-option]");
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  deleteOptionListItem(
+    button.dataset.deleteOption ?? "",
+    button.dataset.optionValue ?? ""
+  );
+});
+
+financeAdminList?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const button = target.closest("[data-delete-option]");
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  deleteOptionListItem(
+    button.dataset.deleteOption ?? "",
+    button.dataset.optionValue ?? ""
+  );
+});
+
 newSubmodelPriceInput?.addEventListener("blur", handleFormattedNumericInput);
 submodelAdminList?.addEventListener("blur", (event) => {
   const target = event.target;
@@ -2341,6 +2793,12 @@ adminConfirmModal?.addEventListener("click", (event) => {
   }
 });
 syncToyotaDataButton?.addEventListener("click", handleToyotaThailandSync);
+
+adminTabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveAdminTab(button.dataset.adminTab ?? "vehicle");
+  });
+});
 
 if (form instanceof HTMLFormElement) {
   calculationTypeSelect.addEventListener("change", () => {
@@ -2547,4 +3005,6 @@ if (form instanceof HTMLFormElement) {
 }
 
 initializeVehicleCatalog();
+initializeCustomOptionLists();
 initializeCalculator();
+setActiveAdminTab("vehicle");

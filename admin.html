@@ -19,7 +19,39 @@
       </div>
     </section>
 
-    <section class="card summary-card model-admin-card">
+    <section class="card summary-card admin-tabs-card">
+      <div class="admin-tabs" role="tablist" aria-label="เมนูจัดการข้อมูล">
+        <button
+          type="button"
+          id="admin-tab-vehicle"
+          class="admin-tab-button is-active"
+          data-admin-tab="vehicle"
+          role="tab"
+          aria-selected="true"
+          aria-controls="admin-panel-vehicle"
+        >รุ่นรถ</button>
+        <button
+          type="button"
+          id="admin-tab-channel"
+          class="admin-tab-button"
+          data-admin-tab="channel"
+          role="tab"
+          aria-selected="false"
+          aria-controls="admin-panel-channel"
+        >ช่องทาง</button>
+        <button
+          type="button"
+          id="admin-tab-finance"
+          class="admin-tab-button"
+          data-admin-tab="finance"
+          role="tab"
+          aria-selected="false"
+          aria-controls="admin-panel-finance"
+        >Finance</button>
+      </div>
+    </section>
+
+    <section id="admin-panel-vehicle" class="card summary-card model-admin-card admin-tab-panel" data-admin-panel="vehicle" role="tabpanel" aria-labelledby="admin-tab-vehicle">
       <section class="summary-block" aria-labelledby="vehicle-catalog-heading">
         <div class="section-heading">
           <div>
@@ -99,6 +131,62 @@
         </div>
 
         <p id="message" class="message" role="status"></p>
+      </section>
+    </section>
+
+    <section id="admin-panel-channel" class="card summary-card admin-tab-panel is-hidden" data-admin-panel="channel" role="tabpanel" aria-labelledby="admin-tab-channel" hidden>
+      <section class="summary-block" aria-labelledby="channel-list-admin-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="channel-list-admin-heading">จัดการรายการช่องทาง</h2>
+            <span>เพิ่ม แก้ไข และลบรายการที่ใช้ใน dropdown ช่องทาง</span>
+          </div>
+        </div>
+
+        <div class="model-admin-panel">
+          <div class="admin-panel-heading">
+            <h3>ช่องทาง</h3>
+            <span>จัดการรายการในช่อง dropdown ช่องทาง</span>
+          </div>
+
+          <form id="channel-create-form" class="admin-inline-form" autocomplete="off">
+            <label>
+              <span>เพิ่มช่องทางใหม่</span>
+              <input id="new-channel-name" type="text" placeholder="เช่น Facebook">
+            </label>
+            <button type="submit">เพิ่มช่องทาง</button>
+          </form>
+
+          <div id="channel-admin-list" class="option-admin-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="admin-panel-finance" class="card summary-card admin-tab-panel is-hidden" data-admin-panel="finance" role="tabpanel" aria-labelledby="admin-tab-finance" hidden>
+      <section class="summary-block" aria-labelledby="finance-list-admin-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="finance-list-admin-heading">จัดการรายการ Finance</h2>
+            <span>เพิ่ม แก้ไข และลบรายการที่ใช้ใน dropdown Finance</span>
+          </div>
+        </div>
+
+        <div class="model-admin-panel">
+          <div class="admin-panel-heading">
+            <h3>Finance</h3>
+            <span>จัดการรายการในช่อง dropdown Finance</span>
+          </div>
+
+          <form id="finance-create-form" class="admin-inline-form" autocomplete="off">
+            <label>
+              <span>เพิ่ม Finance ใหม่</span>
+              <input id="new-finance-name" type="text" placeholder="เช่น TLT">
+            </label>
+            <button type="submit">เพิ่ม Finance</button>
+          </form>
+
+          <div id="finance-admin-list" class="option-admin-list"></div>
+        </div>
       </section>
     </section>
   </main>

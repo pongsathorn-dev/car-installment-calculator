@@ -51,6 +51,25 @@ function buildFirebaseGiftStore() {
         updatedAt: serverTimestamp()
       }, { merge: true });
     },
+    async loadOptionLists() {
+      const snapshot = await getDoc(vehicleCatalogDocumentRef);
+      if (!snapshot.exists()) {
+        return null;
+      }
+
+      const data = snapshot.data();
+      return {
+        customerChannels: Array.isArray(data?.customerChannels) ? data.customerChannels : [],
+        financeProviders: Array.isArray(data?.financeProviders) ? data.financeProviders : []
+      };
+    },
+    async saveOptionLists(state) {
+      await setDoc(vehicleCatalogDocumentRef, {
+        customerChannels: Array.isArray(state?.customerChannels) ? state.customerChannels : [],
+        financeProviders: Array.isArray(state?.financeProviders) ? state.financeProviders : [],
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    },
     async loadVehicleCatalog() {
       const snapshot = await getDoc(vehicleCatalogDocumentRef);
       if (!snapshot.exists()) {
