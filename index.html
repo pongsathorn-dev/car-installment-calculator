@@ -41,9 +41,21 @@
           </select>
         </label>
 
-        <label class="form-span-full">
+        <label class="form-span-half">
           <span>รับรถ</span>
           <input id="delivery-date" name="delivery-date" type="text" placeholder="ระบุวันรับรถ">
+        </label>
+
+        <label class="form-span-half">
+          <span>Finance</span>
+          <select id="finance-provider" name="finance-provider">
+            <option value="">เลือก Finance</option>
+            <!--option value="FIN">FIN</option-->
+            <option value="TLT">TLT</option>
+            <option value="TLT ( Smart Loan )">TLT ( Smart Loan )</option>
+            <option value="SCB">SCB</option>
+            <option value="KBANK">KBANK</option>
+          </select>
         </label>
 
         <label class="form-span-full">
@@ -170,6 +182,7 @@
         </div>
 
         <div class="form-actions">
+          <button type="button" id="copy-top-summary">คัดลอกข้อความสรุปด้านบน</button>
           <button type="button" id="reset-form" class="secondary-button">เคลียร์ข้อมูล</button>
         </div>
       </form>

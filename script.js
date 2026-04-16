@@ -178,6 +178,7 @@ const customerNameInput = document.getElementById("customer-name");
 const customerPhoneInput = document.getElementById("customer-phone");
 const customerChannelInput = document.getElementById("customer-channel");
 const deliveryDateInput = document.getElementById("delivery-date");
+const financeProviderInput = document.getElementById("finance-provider");
 const calculationTypeSelect = document.getElementById("calculation-type");
 const carModelInput = document.getElementById("car-model");
 const carSubmodelInput = document.getElementById("car-submodel");
@@ -196,6 +197,7 @@ const loanTermSelect = document.getElementById("loan-term");
 const rvField = document.getElementById("rv-field");
 const rvPercentageInput = document.getElementById("rv-percentage");
 const copySummaryButton = document.getElementById("copy-summary");
+const copyTopSummaryButton = document.getElementById("copy-top-summary");
 const resetButton = document.getElementById("reset-form");
 const message = document.getElementById("message");
 
@@ -1073,6 +1075,7 @@ function buildCalculatorFormState() {
     customerPhone: customerPhoneInput?.value ?? "",
     customerChannel: customerChannelInput?.value ?? "",
     deliveryDate: deliveryDateInput?.value ?? "",
+    financeProvider: financeProviderInput?.value ?? "",
     calculationType: calculationTypeSelect?.value ?? "balloon",
     carModel: carModelInput?.value ?? "",
     carSubmodel: carSubmodelInput?.value ?? "",
@@ -1134,6 +1137,7 @@ function loadCalculatorFormState() {
     customerPhoneInput.value = String(state.customerPhone ?? "");
     customerChannelInput.value = String(state.customerChannel ?? "");
     deliveryDateInput.value = String(state.deliveryDate ?? "");
+    financeProviderInput.value = String(state.financeProvider ?? "");
     calculationTypeSelect.value = String(state.calculationType ?? "balloon");
     carModelInput.value = String(state.carModel ?? "");
     carSubmodelInput.value = String(state.carSubmodel ?? "");
@@ -1914,12 +1918,72 @@ function calculateLoan() {
   remainingMarginDisplay.textContent = formatNumber(remainingMargin);
 }
 
+function buildTopSummaryText() {
+  const summary = getCalculatorSummary();
+  const customerName = customerNameInput.value.trim();
+  const customerPhone = customerPhoneInput.value.trim();
+  const customerChannel = customerChannelInput.value.trim();
+  const deliveryDate = deliveryDateInput.value.trim();
+  const financeProvider = financeProviderInput.value.trim();
+  const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
+  const headline = modelText || "รุ่นรถที่เลือก";
+  const carColor = carColorSelect.value.trim();
+  const carPrice = parseNumber(carPriceInput.value);
+  const specialColor = parseNumber(specialColorInput.value);
+  const hasSpecialColor = specialColorInput.value.trim() !== "";
+  const hasAdjustment = accessoryInput.value.trim() !== "";
+  const shouldShowNetPrice = hasSpecialColor || hasAdjustment;
+  const adjustmentLine = summary.isDiscountMode
+    ? `ส่วนลด ${formatSummaryNumber(summary.discountAmount)} บาท`
+    : `บวกอุปกรณ์ ${formatSummaryNumber(summary.accessoryAmount)} บาท`;
+  const campaignLabel = calculationTypeSelect.value === "standard"
+    ? "แคมเปญดอกเบี้ยพิเศษ"
+    : "แคมเปญสบายดี";
+  const downPaymentPercent = downPaymentPercentSelect.value === "custom"
+    ? (summary.netCarPrice > 0 ? (summary.downPayment / summary.netCarPrice) * 100 : 0)
+    : parseNumber(downPaymentPercentSelect.value);
+  const loanYears = summary.loanTermMonths / 12;
+  const installmentLines = summary.isBalloon
+    ? [
+        `งวดที่ 1-${Math.max(summary.loanTermMonths - 1, 1)} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(getDisplayedMonthlyPayment(summary.monthlyPayment, true))} บาท`,
+        `งวดที่ ${summary.loanTermMonths} (RV${formatPercent(summary.rvPercentage)}%) = ${formatSummaryNumber(summary.balloonPayment)} บาท`
+      ]
+    : [
+        `งวดที่ 1-${summary.loanTermMonths} (${formatPercent(summary.annualRatePercent)}%) = ${formatSummaryNumber(summary.monthlyPayment)} บาท`
+      ];
+  const customerLines = [
+    customerName ? `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨` : "",
+    customerPhone ? `📞 โทร: ${customerPhone}` : "",
+    customerChannel ? `📍 ช่องทาง: ${customerChannel}` : "",
+    deliveryDate ? `📆 รับรถ: ${deliveryDate}` : "",
+    financeProvider ? `🏦 Finance: ${financeProvider}` : ""
+  ].filter(Boolean);
+
+  return [
+    ...customerLines,
+    ...(customerLines.length > 0 ? [""] : []),
+    `🚗 ${headline} 💨`,
+    ...(carColor ? [`🎨 สีรถ ${carColor}`] : []),
+    `(🌼 ${campaignLabel} 🌼)`,
+    `💵 ราคารถ ${formatSummaryNumber(carPrice)} บาท`,
+    ...(hasSpecialColor ? [`บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`] : []),
+    ...(hasSpecialColor ? [`= ${formatSummaryNumber(summary.priceWithColor)} บาท`] : []),
+    ...(hasAdjustment ? [adjustmentLine] : []),
+    ...(shouldShowNetPrice ? [`ราคาสุทธิ ${formatSummaryNumber(summary.netCarPrice)} บาท`] : []),
+    `🌟ดาวน์ ${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
+    `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
+    `ผ่อน ${formatPercent(loanYears)} ปี`,
+    ...installmentLines
+  ].join("\n");
+}
+
 function buildSummaryText() {
   const summary = getCalculatorSummary();
   const customerName = customerNameInput.value.trim();
   const customerPhone = customerPhoneInput.value.trim();
   const customerChannel = customerChannelInput.value.trim();
   const deliveryDate = deliveryDateInput.value.trim();
+  const financeProvider = financeProviderInput.value.trim();
   const campaignLabel = calculationTypeSelect.options[calculationTypeSelect.selectedIndex]?.text ?? "";
   const modelText = [carModelInput.value.trim(), carSubmodelInput.value.trim()].filter(Boolean).join(" ");
   const carColor = carColorSelect instanceof HTMLSelectElement ? carColorSelect.value.trim() : "";
@@ -1935,6 +1999,7 @@ function buildSummaryText() {
     : "- ยังไม่ได้เลือกของแถม";
   const hasSpecialColor = specialColorInput.value.trim() !== "";
   const hasAdjustment = accessoryInput.value.trim() !== "";
+  const shouldShowNetPrice = hasSpecialColor || hasAdjustment;
   const hasSupportDiscount = !summary.isDiscountMode && supportDiscountInput.value.trim() !== "";
   const hasRegistrationFee = registrationFeeInput.value.trim() !== "";
   const hasFinanceFee = financeFeeInput.value.trim() !== "";
@@ -1958,7 +2023,8 @@ function buildSummaryText() {
     customerName ? `👩🏻👦🏻 ข้อมูลลูกค้าคนพิเศษ: ${customerName}  💖✨` : "",
     customerPhone ? `📞 โทร: ${customerPhone}` : "",
     customerChannel ? `📍 ช่องทาง: ${customerChannel}` : "",
-    deliveryDate ? `📆 รับรถ: ${deliveryDate}` : ""
+    deliveryDate ? `📆 รับรถ: ${deliveryDate}` : "",
+    financeProvider ? `🏦 Finance: ${financeProvider}` : ""
   ].filter(Boolean);
 
   return [
@@ -1971,7 +2037,7 @@ function buildSummaryText() {
     ...(hasSpecialColor ? [`บวกสีพิเศษ ${formatSummaryNumber(specialColor)} บาท`] : []),
     ...(hasSpecialColor ? [`= ${formatSummaryNumber(summary.priceWithColor)} บาท`] : []),
     ...(hasAdjustment ? [adjustmentLine] : []),
-    `ราคาสุทธิ ${formatSummaryNumber(summary.netCarPrice)} บาท`,
+    ...(shouldShowNetPrice ? [`ราคาสุทธิ ${formatSummaryNumber(summary.netCarPrice)} บาท`] : []),
     `🌟ดาวน์ ${formatPercent(downPaymentPercent)}% = ${formatSummaryNumber(summary.downPayment)} บาท`,
     `ยอดจัด ${formatSummaryNumber(summary.loanAmount)} บาท`,
     `ผ่อน ${formatPercent(loanYears)} ปี`,
@@ -1996,25 +2062,31 @@ function buildSummaryText() {
   ].join("\n");
 }
 
-async function copySummaryText() {
-  const summaryText = buildSummaryText();
-
+async function copyTextToClipboard(text, successMessage) {
   try {
     if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(summaryText);
+      await navigator.clipboard.writeText(text);
     } else {
       const helper = document.createElement("textarea");
-      helper.value = summaryText;
+      helper.value = text;
       document.body.appendChild(helper);
       helper.select();
       document.execCommand("copy");
       helper.remove();
     }
 
-    setMessage("คัดลอกข้อความสรุปแล้ว");
+    setMessage(successMessage);
   } catch (error) {
     setMessage("ไม่สามารถคัดลอกข้อความสรุปได้");
   }
+}
+
+async function copySummaryText() {
+  await copyTextToClipboard(buildSummaryText(), "คัดลอกข้อความสรุปแล้ว");
+}
+
+async function copyTopSummaryText() {
+  await copyTextToClipboard(buildTopSummaryText(), "คัดลอกข้อความสรุปด้านบนแล้ว");
 }
 
 function resetFormState() {
@@ -2038,6 +2110,7 @@ function resetFormState() {
   customerPhoneInput.value = "";
   customerChannelInput.value = "";
   deliveryDateInput.value = "";
+  financeProviderInput.value = "";
 
   carPriceInput.value = "";
   specialColorInput.value = "";
@@ -2450,11 +2523,16 @@ if (form instanceof HTMLFormElement) {
     copySummaryText();
   });
 
+  copyTopSummaryButton.addEventListener("click", () => {
+    copyTopSummaryText();
+  });
+
   [
     customerNameInput,
     customerPhoneInput,
     customerChannelInput,
     deliveryDateInput,
+    financeProviderInput,
     calculationTypeSelect,
     carModelInput,
     carSubmodelInput,
